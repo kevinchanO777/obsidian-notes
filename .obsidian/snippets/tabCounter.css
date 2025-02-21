@@ -1,0 +1,13 @@
+/* https://forum.obsidian.md/t/show-tab-numbers/47712 */
+
+.mod-root .workspace-tab-header-container {
+    counter-reset: tabOrder;
+}
+
+.mod-root .workspace-tab-header {
+    counter-increment: tabOrder;
+}
+
+.mod-root .workspace-tab-header:not(.is-active) .workspace-tab-header-inner::before {
+    content: counter(tabOrder) ". ";
+}
