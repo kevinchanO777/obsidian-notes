@@ -1,3 +1,7 @@
+---
+tags:
+  - git
+---
 
 #### 1. Git pager
 ```sh

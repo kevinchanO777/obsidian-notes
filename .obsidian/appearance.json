@@ -2,6 +2,8 @@
   "theme": "obsidian",
   "accentColor": "",
   "enabledCssSnippets": [
-    "tabCounter"
-  ]
+    "tabCounter",
+    "animation"
+  ],
+  "cssTheme": ""
 }
