@@ -44,11 +44,12 @@ git fetch --prune
 
 *Executing `git gc` is literally telling Git to clean up the mess it's made in the current repository - [Atlassian](https://www.atlassian.com/git/tutorials/git-gc)*
 
-!
+<mark style="background: #FFF3A3A6;">You don't want to do it too often, sometimes those "**garbage**" may save you</mark>
 
 ```sh
 git gc
 ```
+
 
 #### 2. Git prune
 
