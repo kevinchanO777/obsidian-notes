@@ -20,3 +20,12 @@ This sets `LENGTH` to the value of `$1` *(i.e. the first argument when calling t
 | `2>`           | Redirects standard error (`stderr`)                              |
 | `&>` *OR* `>&` | Redirects **both** `stdout` and `stderr` to a file               |
 | `2>&1`         | Redirect standard error to the same location as standard output. |
+
+### 3. Check your distro
+
+```sh
+ls /etc/*release
+cat /etc/os-release
+lsb_release -d
+uname -a
+```
