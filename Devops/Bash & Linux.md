@@ -1,4 +1,4 @@
-### 1. Bash parameter expansion
+##### 1. Bash parameter expansion
 
 In Bash, you can use [parameter expansion](https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html) to set a **default** **value** for a variable. 
 
@@ -10,7 +10,7 @@ pwgen -sy $LENGTH 1 | tr -d '\n' | pbcopy
 This sets `LENGTH` to the value of `$1` *(i.e. the first argument when calling the script)* if it's provided; otherwise, it defaults to `16`.
 
 
-### 2. Redirection
+##### 2. Redirection
 
 > [!IMPORTANT] Redirection is shell specific
 
@@ -21,11 +21,25 @@ This sets `LENGTH` to the value of `$1` *(i.e. the first argument when calling t
 | `&>` *OR* `>&` | Redirects **both** `stdout` and `stderr` to a file               |
 | `2>&1`         | Redirect standard error to the same location as standard output. |
 
-### 3. Check your distro
+##### 3. Check your distro
 
 ```sh
 ls /etc/*release
 cat /etc/os-release
 lsb_release -d
 uname -a
+```
+
+##### 4. Look for a file
+
+```sh
+# Case sensitive
+find /path -name "*jpg"
+
+# Case insensitive
+find /path -iname "*jpg"
+
+# Regex for files ending with .jpg
+ag -g "\.jpg$" /path
+
 ```
