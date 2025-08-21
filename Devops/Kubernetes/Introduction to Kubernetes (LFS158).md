@@ -100,7 +100,7 @@ At a very high level, Kubernetes is a cluster of compute systems categorized by 
 
 - **High-Availability (HA) Configuration**:
     - Adding control plane node replicas enhances fault tolerance.
-    - Only one node actively manages the cluster, while others stay in sync for resiliency.
+    - ==Only one node actively manages the cluster==, while others stay in sync for resiliency.
 
 - **Cluster State Storage**:
     - Cluster configuration data stored in a distributed key-value store.
@@ -108,8 +108,31 @@ At a very high level, Kubernetes is a cluster of compute systems categorized by 
 
 
 - **Key-Value Store Topologies**:
-    - **Stacked Topology**: Key-value store on the control plane node; HA replicas ensure resiliency.
-    - **External Topology**: Key-value store on a dedicated host, reducing data loss risk but requiring separate replication for HA.
-    - **External topology** increases resiliency but requires additional hardware, raising operational costs.
+    - ==**Stacked Topology**==: Key-value store on the ==control plane node==; HA replicas ensure resiliency.
+    - **==External Topology==**: Key-value store on a ==dedicated host==, reducing data loss risk but requiring separate replication for HA.
+    - **External topology**<mark style="background: #BBFABBA6;"> increases resiliency</mark> but requires <mark style="background: #FF5582A6;">additional hardware</mark>, raising operational costs.
 
-  
+
+##### Control Plane Nodes Components:
+
+A control plane node runs the following essential control plane components and agents: 
+
+>**API server, scheduler, controller managers, and key-value data store.**
+
+- <mark style="background: #ADCCFFA6;">kube-apiserver</mark>: 
+```
+The core server that exposes the Kubernetes API via HTTP, handling all REST requests and serving as the front-end for the control plane. 
+
+The API Server is the only control plane component to talk to the key-value store
+```
+
+- <mark style="background: #ADCCFFA6;">kube-scheduler</mark>: Watches for newly created Pods without an assigned node and selects the most suitable node for them based on resource requirements, policies, and constraints.
+
+- <mark style="background: #ADCCFFA6;">kube-controller-manager</mark>: Runs multiple controller processes (e.g., node controller, replication controller) that regulate the state of the cluster to match the desired state defined in the API.
+
+- **<mark style="background: #ADCCFFA6;">etcd</mark>**: A distributed, highly available key-value store that persists all cluster data, including configuration and state information.
+
+
+- **cloud-controller-manager** (==optional==): Manages interactions with underlying cloud providers, handling cloud-specific control loops like node and load balancer management.
+
+In addition, the control plane node runs: container runtime, node agent (kubelet), proxy (kube-proxy), optional add-ons for observability, such as dashboard, cluster-level monitoring, and logging.
