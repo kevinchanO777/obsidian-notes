@@ -75,3 +75,41 @@ How to test individual component?
     
 - **IPv4/IPv6 dual-stack**  
     Kubernetes supports both IPv4 and IPv6 addresses.
+
+#### Chapter 4 - Kubernetes Architecture
+
+At a very high level, Kubernetes is a cluster of compute systems categorized by their distinct roles:
+
+- One or more ==control plane nodes
+- One or more ===worker nodes== (optional, but recommended).
+ 
+![[Pasted image 20250821163746.png]]
+
+##### Control Plane Nodes Overview:
+
+- **Control Plane Node Function**:
+    - Provides a running environment for control plane agents.
+    - Manages the state of a Kubernetes cluster, acting as the brain for all cluster operations.
+
+- **Control Plane Components**:
+    - Consist of agents with distinct roles in cluster management.
+    - Users interact with the cluster via CLI, Web UI Dashboard, or API.
+
+- **Importance of Control Plane**:
+    - Critical to keep running to avoid downtime and service disruption.
+
+- **High-Availability (HA) Configuration**:
+    - Adding control plane node replicas enhances fault tolerance.
+    - Only one node actively manages the cluster, while others stay in sync for resiliency.
+
+- **Cluster State Storage**:
+    - Cluster configuration data stored in a distributed key-value store.
+    - ==Stores only cluster state data==, not client workload data.
+
+
+- **Key-Value Store Topologies**:
+    - **Stacked Topology**: Key-value store on the control plane node; HA replicas ensure resiliency.
+    - **External Topology**: Key-value store on a dedicated host, reducing data loss risk but requiring separate replication for HA.
+    - **External topology** increases resiliency but requires additional hardware, raising operational costs.
+
+  

@@ -43,3 +43,4 @@ find /path -iname "*jpg"
 ag -g "\.jpg$" /path
 
 ```
+
