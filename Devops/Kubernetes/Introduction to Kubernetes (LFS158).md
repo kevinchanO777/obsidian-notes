@@ -112,6 +112,11 @@ At a very high level, Kubernetes is a cluster of compute systems categorized by 
     - **==External Topology==**: Key-value store on a ==dedicated host==, reducing data loss risk but requiring separate replication for HA.
     - **External topology**<mark style="background: #BBFABBA6;"> increases resiliency</mark> but requires <mark style="background: #FF5582A6;">additional hardware</mark>, raising operational costs.
 
+**Stacked Topology:**
+![[Pasted image 20250823191149.png]]
+
+**External Topology:**
+![[Pasted image 20250823191203.png]]
 
 ##### Control Plane Nodes Components:
 
@@ -136,10 +141,13 @@ Watches for newly created Pods without an assigned node and selects the most sui
 Runs multiple controller processes (e.g., node controller, replication controller) that regulate the state of the cluster to match the desired state defined in objects' configuration data via API server.
 ```
 
+- **<mark style="background: #ADCCFFA6;">etcd</mark>**: 
+```
+A distributed, highly available key-value store that is used to persist a Kubernetes cluster's state, including configuration and state information.
 
-- **<mark style="background: #ADCCFFA6;">etcd</mark>**: A distributed, highly available key-value store that persists all cluster data, including configuration and state information.
+New data is written to the data store only by appending to it, data is never replaced in the data store. Obsolete data is compacted (or shredded) periodically to minimize the size of the data store.
+```
 
-
-- **cloud-controller-manager** (==optional==): Manages interactions with underlying cloud providers, handling cloud-specific control loops like node and load balancer management.
+- <mark style="background: #ADCCFFA6;">cloud-controller-manager</mark> (==optional==): Manages interactions with underlying cloud providers, handling cloud-specific control loops like node and load balancer management.
 
 In addition, the control plane node runs: container runtime, node agent (kubelet), proxy (kube-proxy), optional add-ons for observability, such as dashboard, cluster-level monitoring, and logging.
