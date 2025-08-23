@@ -185,3 +185,18 @@ For example **cri-containerd** which allows containers to be directly created an
 >  The kube-proxy is responsible for TCP, UDP, and SCTP stream forwarding or random forwarding across a set of Pod backends of an application, and it implements forwarding rules defined by users through Service API objects.
 >  
 >  The kube-proxy node agent operates in conjunction with the iptables of the node. Iptables is a firewall utility created for the Linux OS that can be managed by users through a CLI utility of the same name. The iptables utility is available for and pre-installed on many Linux distributions.
+
+Add-ons
+
+Add-ons are cluster features and functionality not yet available in Kubernetes, therefore implemented through 3rd-party plugins and services.
+
+- DNS  
+    Cluster DNS is a DNS server required to assign DNS records to Kubernetes objects and resources.
+- Dashboard  
+    A general purpose web-based user interface for cluster management.
+- Monitoring  
+    Collects cluster-level container metrics and saves them to a central data store.
+- Logging  
+    Collects cluster-level container logs and saves them to a central log store for analysis.
+- Device Plugins  
+    For system hardware resources, such as GPU, FPGA, high-performance NIC, to be advertised by the node to application pods.
