@@ -1,5 +1,5 @@
 
-#### Chapter 1 - From Monolith to Microservices:
+# Chapter 1 - From Monolith to Microservices:
 
 
 - Explain what a monolith is.
@@ -29,7 +29,7 @@ How to test individual component?
 -> Better re build again from the ground up.
 ```
 
-#### Chapter 2 - Container Orchestration
+# Chapter 2 - Container Orchestration
 
 >Container orchestrators are tools which group systems together to form clusters where containers' deployment and management is automated at scale while meeting the requirements as listed:
 
@@ -40,7 +40,7 @@ How to test individual component?
 - Accessibility from the outside world
 - Seamless updates/rollbacks without any downtime.
 
-#### Chapter 3 - Kubernetes
+# Chapter 3 - Kubernetes
 
 > Kubernetes is an open-source system for automating deployment, scaling, and management of containerized applications"
 
@@ -76,7 +76,7 @@ How to test individual component?
 - **IPv4/IPv6 dual-stack**  
     Kubernetes supports both IPv4 and IPv6 addresses.
 
-#### Chapter 4 - Kubernetes Architecture
+# Chapter 4 - Kubernetes Architecture
 
 At a very high level, Kubernetes is a cluster of compute systems categorized by their distinct roles:
 
@@ -85,7 +85,7 @@ At a very high level, Kubernetes is a cluster of compute systems categorized by 
  
 ![[Pasted image 20250821163746.png]]
 
-#### Control Plane Nodes Overview:
+# Control Plane Nodes Overview:
 
 - **Control Plane Node Function**:
     - Provides a running environment for control plane agents.
@@ -118,7 +118,7 @@ At a very high level, Kubernetes is a cluster of compute systems categorized by 
 **External Topology:**
 ![[Pasted image 20250823191203.png]]
 
-##### Control Plane Nodes Components:
+# Control Plane Nodes Components:
 
 A control plane node runs the following essential control plane components and agents: 
 
@@ -155,7 +155,7 @@ New data is written to the data store only by appending to it, data is never rep
 In addition, the control plane node runs: container runtime, node agent (kubelet), proxy (kube-proxy), optional add-ons for observability, such as dashboard, cluster-level monitoring, and logging.
 
 
-#### Worker Node:
+# Worker Node:
 
 A worker node has the following components: container runtime, node agent - kubelet, kubelet - CRI shims, proxy - kube-proxy, add-ons (for DNS, observability components such as dashboards, cluster-level monitoring and logging, and device plugins).
 
@@ -200,3 +200,64 @@ Add-ons are cluster features and functionality not yet available in Kubernetes, 
     Collects cluster-level container logs and saves them to a central log store for analysis.
 - Device Plugins  
     For system hardware resources, such as GPU, FPGA, high-performance NIC, to be advertised by the node to application pods.
+
+# Networking Challenges
+
+Decoupled microservices based applications rely heavily on networking in order to mimic the tight-coupling once available in the monolithic era. Networking, in general, is not the easiest to understand and implement. Kubernetes is no exception - as a containerized microservices orchestrator it needs to address a few distinct networking challenges:
+
+- Container-to-Container communication inside Pods
+- Pod-to-Pod communication on the same node and across cluster nodes
+- Service-to-Pod communication within the same namespace and across cluster namespaces
+- External-to-Service communication for clients to access applications in a cluster
+
+All these networking challenges must be addressed by a Kubernetes cluster and its plugins.
+
+
+### Pod-to-Pod communication across nodes
+
+In a Kubernetes cluster Pods, groups of containers, are scheduled on nodes in a nearly unpredictable fashion. Regardless of their host node, Pods are expected to be able to communicate with all other Pods in the cluster, all this without the implementation of Network Address Translation (NAT). This is a fundamental requirement of any networking implementation in Kubernetes.
+
+The Kubernetes network model aims to reduce complexity, and it treats Pods as VMs on a network, where each VM is equipped with a network interface - thus each Pod receiving a unique IP address. This model is called "**IP-per-Pod**" and ensures Pod-to-Pod communication, just as VMs are able to communicate with each other on the same network.
+
+Let's not forget about containers though. They share the Pod's network namespace and must coordinate ports assignment inside the Pod just as applications would on a VM, all while being able to communicate with each other on **localhost** - inside the Pod. However, containers are integrated with the overall Kubernetes networking model through the use of the [Container Network Interface](https://www.cni.dev/) (CNI) supported by [CNI plugins](https://github.com/containernetworking/cni#3rd-party-plugins). CNI is a set of specifications and libraries which allow plugins to configure the networking for containers. While there are a few [core plugins](https://github.com/containernetworking/plugins#plugins), most CNI plugins are 3rd-party Software Defined Networking (SDN) solutions implementing the Kubernetes networking model. In addition to addressing the fundamental requirement of the networking model, some networking solutions offer support for Network Policies. [Flannel](https://github.com/coreos/flannel/), [Weave](https://www.weave.works/oss/net/), [Calico](https://www.tigera.io/project-calico/), and [Cilium](https://cilium.io/) are only a few of the SDN solutions available for Kubernetes clusters.
+
+# Chapter 5 - Installing Kubernetes
+
+### Kubernetes Configuration
+
+Kubernetes can be installed using different cluster configurations. The major installation types are described below:
+
+- **All-in-One Single-Node Installation**  
+    In this setup, all the control plane and worker components are installed and running on a single-node. While it is useful for learning, development, and testing, it is not recommended for production purposes.
+- **Single-Control Plane and Multi-Worker Installation**  
+    In this setup, we have a single-control plane node running a stacked etcd instance. Multiple worker nodes can be managed by the control plane node.
+- **Single-Control Plane with Single-Node etcd, and Multi-Worker Installation**  
+    In this setup, we have a single-control plane node with an external etcd instance. Multiple worker nodes can be managed by the control plane node.
+- **Multi-Control Plane and Multi-Worker Installation**  
+    In this setup, we have multiple control plane nodes configured for High-Availability (HA), with each control plane node running a stacked etcd instance. The etcd instances are also configured in an HA etcd cluster and multiple worker nodes can be managed by the HA control plane.
+- **Multi-Control Plane with Multi-Node etcd, and Multi-Worker Installation**  
+    In this setup, we have multiple control plane nodes configured in HA mode, with each control plane node paired with an external etcd instance. The external etcd instances are also configured in an HA etcd cluster, and multiple worker nodes can be managed by the HA control plane. This is the most advanced cluster configuration recommended for production environments.
+
+#### Installing Local Learning Clusters
+
+There are a variety of installation tools allowing us to deploy single- or multi-node Kubernetes clusters on our workstations, for learning and development purposes. For example: **Minikube, Kind, Docker Desktop, etc...**
+
+### Installing Production Clusters with Deployment Tools
+
+When it comes to production ready solutions, there are several recommended tools for Kubernetes cluster bootstrapping and a few that are also capable of provisioning the necessary hosts on the underlying infrastructure.
+
+1. **kubeadm**
+2. **kubespray**
+3. **kops**
+
+In addition, for a manual installation approach, the [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) GitHub project by [Kelsey Hightower](https://twitter.com/kelseyhightower) is an extremely helpful installation guide and resource. The project aims to teach all the detailed steps involved in the bootstrapping of a Kubernetes cluster, steps that are otherwise automated by various tools mentioned in this chapter and obscured from the end user.
+
+
+### Production Clusters from Certified Solutions Providers
+
+**Hosted Solutions**  
+Hosted Solutions providers fully manage the provided software stack, while the user pays hosting and management charges. Popular vendors providing hosted solutions for Kubernetes are (listed in alphabetical order):
+
+- [Alibaba Cloud Container Service for Kubernetes](https://www.alibabacloud.com/product/kubernetes) (ACK)
+- [Amazon Elastic Kubernetes Service](https://aws.amazon.com/eks/) (EKS)
+- [Azure Kubernetes Service](https://azure.microsoft.com/en-us/services/kubernetes-service/) (AKS)
