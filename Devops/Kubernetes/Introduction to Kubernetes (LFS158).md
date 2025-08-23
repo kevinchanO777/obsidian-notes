@@ -126,9 +126,16 @@ The core server that exposes the Kubernetes API via HTTP, handling all REST requ
 The API Server is the only control plane component to talk to the key-value store
 ```
 
-- <mark style="background: #ADCCFFA6;">kube-scheduler</mark>: Watches for newly created Pods without an assigned node and selects the most suitable node for them based on resource requirements, policies, and constraints.
+- <mark style="background: #ADCCFFA6;">kube-scheduler</mark>: 
+```
+Watches for newly created Pods without an assigned node and selects the most suitable node for them based on resource requirements, policies, and constraints.
+```
 
-- <mark style="background: #ADCCFFA6;">kube-controller-manager</mark>: Runs multiple controller processes (e.g., node controller, replication controller) that regulate the state of the cluster to match the desired state defined in the API.
+- <mark style="background: #ADCCFFA6;">kube-controller-manager</mark>: 
+```
+Runs multiple controller processes (e.g., node controller, replication controller) that regulate the state of the cluster to match the desired state defined in objects' configuration data via API server.
+```
+
 
 - **<mark style="background: #ADCCFFA6;">etcd</mark>**: A distributed, highly available key-value store that persists all cluster data, including configuration and state information.
 
