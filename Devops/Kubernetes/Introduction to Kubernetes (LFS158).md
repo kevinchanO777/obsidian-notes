@@ -156,3 +156,32 @@ In addition, the control plane node runs: container runtime, node agent (kubele
 
 
 #### Worker Node:
+
+A worker node has the following components: container runtime, node agent - kubelet, kubelet - CRI shims, proxy - kube-proxy, add-ons (for DNS, observability components such as dashboards, cluster-level monitoring and logging, and device plugins).
+
+<mark style="background: #ADCCFFA6;">Container Runtime</mark>
+>In order to manage a container's lifecycle, Kubernetes requires a container runtime on the node where a Pod and its containers are to be scheduled. A runtime is required on each node of a Kubernetes cluster, both control plane and worker. 
+>
+>The [recommendation](https://kubernetes.io/docs/setup/) is to run the Kubernetes control plane components as containers, hence the necessity of a runtime on the control plane nodes. Kubernetes supports several container runtimes: *CRI-O, containerd, Docker Engine*
+
+
+<mark style="background: #ADCCFFA6;">Node Agent -  kublet</mark>
+>The kubelet is an agent running on each node, control plane and workers, and it communicates with the control plane. It receives Pod definitions, primarily from the API Server, and interacts with the container runtime on the node to run containers associated with the Pod. It also monitors the health and resources of Pods running containers.
+>
+>The kubelet connects to container runtimes through a plugin based interface - the [Container Runtime Interface](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-node/container-runtime-interface.md) (CRI). The CRI consists of protocol buffers, gRPC API, libraries, and additional specifications and tools. In order to connect to interchangeable container runtimes, kubelet uses a *CRI shim*, an application which provides a clear abstraction layer between kubelet and the container runtime.
+
+**Container Runtime Interface**
+![[Pasted image 20250823224320.png]]
+
+<mark style="background: #ADCCFFA6;">kubelet - CRI shims</mark>
+>Shims are Container Runtime Interface (CRI) implementations, interfaces or adapters, specific to each container runtime supported by Kubernetes.
+
+For example **cri-containerd** which allows containers to be directly created and managed with containerd at kubelet's request:
+![[Pasted image 20250823224929.png]]
+
+<mark style="background: #ADCCFFA6;">Proxy - kube-proxy</mark>
+>  The kube-proxy is the network agent which runs on each node, control plane and workers, responsible for dynamic updates and maintenance of all networking rules on the node. It abstracts the details of Pods networking and forwards connection requests to the containers in the Pods.
+>  
+>  The kube-proxy is responsible for TCP, UDP, and SCTP stream forwarding or random forwarding across a set of Pod backends of an application, and it implements forwarding rules defined by users through Service API objects.
+>  
+>  The kube-proxy node agent operates in conjunction with the iptables of the node. Iptables is a firewall utility created for the Linux OS that can be managed by users through a CLI utility of the same name. The iptables utility is available for and pre-installed on many Linux distributions.
