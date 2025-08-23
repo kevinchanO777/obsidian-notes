@@ -85,7 +85,7 @@ At a very high level, Kubernetes is a cluster of compute systems categorized by 
  
 ![[Pasted image 20250821163746.png]]
 
-##### Control Plane Nodes Overview:
+#### Control Plane Nodes Overview:
 
 - **Control Plane Node Function**:
     - Provides a running environment for control plane agents.
@@ -146,8 +146,13 @@ Runs multiple controller processes (e.g., node controller, replication controlle
 A distributed, highly available key-value store that is used to persist a Kubernetes cluster's state, including configuration and state information.
 
 New data is written to the data store only by appending to it, data is never replaced in the data store. Obsolete data is compacted (or shredded) periodically to minimize the size of the data store.
+
+
 ```
 
 - <mark style="background: #ADCCFFA6;">cloud-controller-manager</mark> (==optional==): Manages interactions with underlying cloud providers, handling cloud-specific control loops like node and load balancer management.
 
 In addition, the control plane node runs: container runtime, node agent (kubelet), proxy (kube-proxy), optional add-ons for observability, such as dashboard, cluster-level monitoring, and logging.
+
+
+#### Worker Node:
