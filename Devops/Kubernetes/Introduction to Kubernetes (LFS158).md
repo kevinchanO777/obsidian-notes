@@ -369,13 +369,198 @@ Using that token, the client can securely communicate with the Kubernetes API Se
 Let's create an access token for the **<mark style="background: #ADCCFFA6;">default</mark>** ServiceAccount, and grant special permission to access the root directory of the API (special permission that was not necessary when the **kubectl proxy** was used earlier). The special permission will be set through a Role Based Access Control (RBAC) policy. The policy is the <mark style="background: #ADCCFFA6;">clusterrole</mark> defined below, which is granted through the **<mark style="background: #ADCCFFA6;">clusterrolebinding</mark>** definition (RBAC, clusterroles, and clusterrolebindings will be discussed in a later chapter). The special permission is only needed to access the root directory of the API, but not needed to access **/api**, **/apis**, or other subdirectories:
 
 ```sh
+# Create token named `default`
 export TOKEN=$(kubectl create token default)
 
 # Create clusterrole api-access-root
 kubectl create clusterrole api-access-root --verb=get --non-resource-url='*'
 
-# View clusterrole
+# View created clusterrole
 kubectl describe clusterrole api-access-root
 
-kubectl create clusterrolebinding api-access-root --clusterrole api-access-root --serviceaccount=default:default
+# Grants a ClusterRole across the entire cluster (all namespaces)
+kubectl create clusterrolebinding api-access-root --clusterrole=api-access-root --serviceaccount=default:default
+
+# Get address of the api server
+export APISERVER=$(kubectl config view | grep https** **|** **cut -f 2- -d ":" | tr -d " ")
+
+# Test
+curl $APISERVER --header "Authorization:** **Bearer $TOKEN" --insecure
 ```
+
+Newly created cluster role shown in the web ui
+![[Screenshot 2025-08-25 at 1.12.34 AM.png]]
+
+
+To delete a cluster role: `kubectl delete clusterrole <clusterrole>`
+
+# Chapter 8 - Kubernetes Building Blocks
+
+Examples of Kubernetes object types are **Nodes, Namespaces, Pods, ReplicaSets Deployments, DaemonSets, etc.**
+
+With each object, we declare our <mark style="background: #ADCCFFA6;">intent</mark>, or the desired state of the object, in the <mark style="background: #ADCCFFA6;">spec</mark> section. The Kubernetes system manages the **status** section for objects, where it records the actual state of the object. At any given point in time, the Kubernetes Control Plane tries to match the object's actual state to the object's desired state.
+
+When creating an object, the object's configuration data section from below the **spec** field has to be submitted to the Kubernetes API Server. The API request to create an object must have the **spec** section, describing the desired state, as well as other details.
+
+### Nodes
+
+Nodes are virtual identities assigned by Kubernetes to systems (Virtual Machines, bare-metal, Containers) in the cluster. They are unique identities used for resource accounting, monitoring, and workload management.
+
+**Node Components**:
+
+- Managed by two Kubernetes node agents: **kubelet** and **kube-proxy**.
+- Host a **container runtime** to run containerized workloads (control plane agents and user workloads).
+- **Kubelet**: Interacts with the runtime to run containers, monitors container and node health, reports issues and node state to the API Server.
+- **Kube-proxy**: Manages network traffic to containers.
+
+**Types of Nodes**:
+
+- **Control Plane Nodes**:
+    - Run control plane agents (API Server, Scheduler, Controller Managers, etcd), kubelet, kube-proxy, container runtime, and add-ons (networking, monitoring, logging, DNS).
+    - At least one control plane node required; multiple nodes used for High Availability (HA).
+- **Worker Nodes**:
+    - Run kubelet, kube-proxy, container runtime, and add-ons (networking, monitoring, logging, DNS).
+    - Provide resource redundancy in the cluster.
+- **Hybrid/Mixed Nodes**:
+	- Single all-in-one node hosting both control plane agents and user workloads.
+	- Used in cases where high availability and resource redundancy are not critical.
+
+### Namespaces
+
+**Purpose of Namespaces**:
+- Partition a Kubernetes cluster into virtual sub-clusters for multiple users/teams.
+- Ensure resource/object names are unique within a Namespace, but not across different Namespaces.
+
+**Listing Namespaces**:
+- Command: `kubectl get namespaces`
+- Example output:
+```
+NAME STATUS AGE
+default Active 11h
+kube-node-lease Active 11h
+kube-public Active 11h
+kube-system Active 11h
+```
+
+**Default Namespaces (Created by k8s)**:
+- <mark style="background: #ADCCFFA6;">kube-system</mark>: Contains objects created by the Kubernetes system, primarily control plane agents.
+- <mark style="background: #ADCCFFA6;">default</mark>: Holds objects/resources created by administrators/developers; used by default unless another Namespace is specified.
+- <mark style="background: #ADCCFFA6;">kube-public</mark>: Unsecured, readable by anyone, used for exposing non-sensitive cluster information.
+- <mark style="background: #ADCCFFA6;">kube-node-lease</mark>: Stores node lease objects for node heartbeat data.
+
+To create a namespace: `kubectl create namespace <name>`
+
+### Pods
+![[Pasted image 20250825014628.png]]
+- **Definition**:
+    - Smallest Kubernetes workload object; unit of deployment.
+    - Logical collection of one or more containers, scheduled together, sharing:
+        - Network namespace (single Pod IP).
+        - External storage (volumes) and dependencies.
+
+- **Characteristics**:
+    - Ephemeral; rely on controllers (e.g., Deployments, ReplicaSets, DaemonSets, Jobs) for replication, fault tolerance, self-healing.
+    - Pod specification nested in controller’s Pod Template.
+
+- **Pod Definition (YAML Example)**:
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: nginx-pod
+      labels:
+        run: nginx-pod
+    spec:
+      containers:
+      - name: nginx-pod
+        image: nginx:1.22.1
+        ports:
+        - containerPort: 80
+    ```
+    - **Fields**:
+        - `apiVersion: v1`: Pod API version.
+        - `kind: Pod`: Object type.
+        - `metadata`: Name and optional labels/annotations.
+        - `spec`: Defines desired state (PodSpec), including container image and ports.
+    - Kubelet schedules and runs containers using node’s container runtime.
+
+- **Creating Pods**:
+    - **Declarative**: Use YAML/JSON file with `kubectl create -f <file>` or `kubectl apply -f <file>`.
+    - **Imperative**: `kubectl run nginx-pod --image=nginx:1.22.1 --port=80`.
+    - **Generate Definition**:
+        - YAML: `kubectl run nginx-pod --image=nginx:1.22.1 --port=80 --dry-run=client -o yaml > nginx-pod.yaml`.
+        - JSON: `kubectl run nginx-pod --image=nginx:1.22.1 --port=80 --dry-run=client -o json > nginx-pod.json`.
+- **Pod Operations**:
+    - Apply: `kubectl apply -f nginx-pod.yaml`.
+    - List: `kubectl get pods`.
+    - Inspect: `kubectl get pod nginx-pod -o yaml/json` or `kubectl describe pod nginx-pod`.
+    - Delete: `kubectl delete pod nginx-pod`.
+
+### Labels
+[Labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) are key-value pairs attached to Kubernetes objects such as Pods, ReplicaSets, Nodes, Namespaces and Persistent Volumes. Labels are used to organize and select a subset of objects, based on the requirements in place. Many objects can have the same Label(s). Labels do not provide uniqueness to objects. Controllers use Labels to logically group together decoupled objects, rather than using objects' names or IDs.
+![[Pasted image 20250825015829.png]]
+
+Controllers, or operators, and Services, use [label selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors) to select a subset of objects. Kubernetes supports two types of Selectors:
+
+- **Equality-Based Selectors**:
+    - Filter objects based on **label keys and values** using:
+        - = or == (equals, interchangeable).
+        - != (not equals).
+    - Example: env=dev or env==dev selects objects with the label env set to dev.
+        
+- **Set-Based Selectors**:
+    - Filter objects based on a **set of values** or **existence of keys** using:
+        - in: Selects objects where the label value is in a set (e.g., env in (dev,qa) selects objects with env set to dev or qa).
+        - notin: Selects objects where the label value is not in a set.
+        - Exists: Selects objects with a specific label key (e.g., app selects objects with the app key).
+        - Does not exist: Selects objects without a specific label key (e.g., !app selects objects without the app key).
+
+### ReplicaSets
+A [ReplicaSet](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/) is, in part, the next-generation ReplicationController, as it implements the replication and self-healing aspects of the ReplicationController. ReplicaSets support both equality- and set-based Selectors, whereas ReplicationControllers only support equality-based Selectors.
+![[Pasted image 20250825020806.png]]
+
+Example ReplicaSet object's definition manifest of a replicaset (redis-rs.yaml):
+```yaml
+apiVersion: apps/v1  
+kind: ReplicaSet  
+metadata:  
+  name: frontend  
+  labels:  
+    app: guestbook  
+    tier: frontend  
+spec:  
+  replicas: 3  
+  selector:  
+    matchLabels:  
+      app: guestbook  
+  template:  
+    metadata:  
+      labels:  
+        app: guestbook  
+    spec:  
+      containers:  
+      - name: php-redis  
+        image: gcr.io/google_samples/gb-frontend:v3**
+```
+
+
+```sh
+# Create the above replicaset
+kubectl apply -f redis-rs.yaml
+
+# Get ReplicaSets
+kubectl get rs
+kubectl get replicatsets
+
+kubectl scale rs frontend --replicas=4
+
+kubectl get rs frontend -o yaml
+kubectl get rs frontend -o json
+
+kubectl describe rs frontend
+
+kubectl delete rs frontend
+
+```
+
+ReplicaSets can be used independently as Pod controllers but they only offer a limited set of features. A set of complementary features are provided by Deployments, the recommended controllers for the orchestration of Pods. Deployments manage the creation, deletion, and updates of Pods. A Deployment automatically creates a ReplicaSet, which then creates a Pod. There is no need to manage ReplicaSets and Pods separately, the Deployment will manage them on our behalf.
