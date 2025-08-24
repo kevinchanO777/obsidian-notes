@@ -261,3 +261,7 @@ Hosted Solutions providers fully manage the provided software stack, while the u
 - [Alibaba Cloud Container Service for Kubernetes](https://www.alibabacloud.com/product/kubernetes) (ACK)
 - [Amazon Elastic Kubernetes Service](https://aws.amazon.com/eks/) (EKS)
 - [Azure Kubernetes Service](https://azure.microsoft.com/en-us/services/kubernetes-service/) (AKS)
+
+# Chapter 6 - Installing Minikube
+
+Minikube is one of the easiest, most flexible and popular methods to run an all-in-one or a multi-node local Kubernetes cluster directly on our local workstations.
