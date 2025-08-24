@@ -265,3 +265,60 @@ Hosted Solutions providers fully manage the provided software stack, while the u
 # Chapter 6 - Installing Minikube
 
 Minikube is one of the easiest, most flexible and popular methods to run an all-in-one or a multi-node local Kubernetes cluster directly on our local workstations.
+
+```sh
+
+# Start a k8s cluster (optional --driver=docker)
+minikube start
+
+# Custom minikube profile
+minikube start --nodes=2 --kubernetes-version=v1.28.1 --driver=docker --profile doubledocker
+
+# Check the status of the Minikube cluster
+minikube status
+
+# Temporary stop all applications running in Minikube
+minikube stop
+
+# Remove Minikube cluster
+minikube delete
+
+# View the status of all clusters in a table formatted output
+minikube profile list
+
+# Switch profile
+minikube profile <profile_name>
+
+minikube node list
+minikube ip
+
+```
+
+The **minikube start** by default selects a driver isolation software, such as a hypervisor or a container runtime, if one (VitualBox) or multiple are installed on the host workstation. In addition it downloads the latest Kubernetes version components. With the selected driver software it provisions a single VM named _minikube_ (with hardware profile of CPUs=2, Memory=6GB, Disk=20GB) or container (Docker) to host the default single-node all-in-one Kubernetes cluster.
+
+The **minikube start** command generates a default minikube cluster with the specifications described above and it will store these specs so that we can restart the default cluster whenever desired. The object that stores the specifications of our cluster is called a _profile_.
+
+# Chapter 7 - Accessing Minikube
+
+Any healthy running Kubernetes cluster can be accessed via any one of the following methods: Command Line Interface (CLI) tools and scripts, web-based User Interface (Web UI) from a web browser, APIs from CLI or programmatically.
+
+### kubectl
+
+**kubectl** allows us to manage local Kubernetes clusters like the Minikube cluster, or remote clusters deployed in the cloud. It is generally installed before installing and starting Minikube, but it can also be installed after the cluster bootstrapping step.
+
+```
+kubectl version --client
+kubectl version --client --output=yaml
+
+kubectl get po -A
+kubectl get nodes
+kubectl get namespaces
+
+kubectl cluster-info
+
+kubectl config view
+```
+
+While starting Minikube, the startup process creates, by default, a configuration file, **config**, inside the **.kube** directory (often referred to as the **[kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)**), which resides in the user's **home** directory (~/.kube/config).
+
+Although for the Kubernetes cluster installed by Minikube the **~/.kube/config** file gets created automatically, this is not the case for Kubernetes clusters installed by other tools. In other cases, the config file has to be created manually and sometimes re-configured to suit various networking and client/server setups.
