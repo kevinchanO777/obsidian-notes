@@ -561,8 +561,41 @@ kubectl get rs,po -o wide
 
 kubectl describe rs frontend
 
+kubectl exec -it <pod-name> -c <container-name> -- <command>
+
 kubectl delete rs frontend
 
 ```
 
 ReplicaSets can be used independently as Pod controllers but they only offer a limited set of features. A set of complementary features are provided by Deployments, the recommended controllers for the orchestration of Pods. Deployments manage the creation, deletion, and updates of Pods. A Deployment automatically creates a ReplicaSet, which then creates a Pod. There is no need to manage ReplicaSets and Pods separately, the Deployment will manage them on our behalf.
+
+
+### Deployments
+
+[Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) objects provide declarative updates to Pods and ReplicaSets. The DeploymentController is part of the control plane node's controller manager, and as a controller it also ensures that the current state always matches the desired state of our running containerized application. It allows for seamless application updates and rollbacks, known as the default _RollingUpdate_ strategy, through **rollouts** and **rollbacks**, and it directly manages its ReplicaSets for application scaling. It also supports a disruptive, less popular update strategy, known as _Recreate_.
+
+Below is an example of a Deployment object's definition manifest in YAML format. This represents the declarative method to define an object, and can serve as a template for a much more complex Deployment definition manifest if desired:
+
+```yaml
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: nginx-deployment  
+  labels:  
+    app: nginx-deployment  
+spec:  
+  replicas: 3  
+  selector:  
+    matchLabels:  
+      app: nginx-deployment  
+  template:  
+    metadata:  
+      labels:  
+        app: nginx-deployment  
+    spec:  
+      containers:  
+      - name: nginx  
+        image: nginx:1.20.2  
+        ports:  
+        - containerPort: 80
+```
