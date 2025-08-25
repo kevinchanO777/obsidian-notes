@@ -264,6 +264,8 @@ Hosted Solutions providers fully manage the provided software stack, while the u
 
 # Chapter 6 - Installing Minikube
 
+> [!WARNING] It's highly recommended you start with AT LEAST 1 worker node and add more on the go
+
 Minikube is one of the easiest, most flexible and popular methods to run an all-in-one or a multi-node local Kubernetes cluster directly on our local workstations.
 
 ```sh
@@ -272,7 +274,7 @@ Minikube is one of the easiest, most flexible and popular methods to run an all-
 minikube start
 
 # Custom minikube profile
-minikube start --nodes=2 --kubernetes-version=v1.28.1 --driver=docker --profile doubledocker
+minikube start --nodes=2 --kubernetes-version=v1.33.1 --driver=docker --profile doubledocker
 
 # Check the status of the Minikube cluster
 minikube status
