@@ -678,3 +678,25 @@ A DaemonSet defines Pods that provide node-local facilities. These might be fund
 
 <mark style="background: #ADCCFFA6;">A DaemonSet ensures that all (or some) Nodes run a copy of a Pod</mark>. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created.
 
+**fluentd-ds.yaml**
+```yaml
+apiVersion: apps/v1  
+kind: DaemonSet  
+metadata:  
+  name: fluentd-agent  
+  namespace: default  
+  labels:  
+    k8s-app: fluentd-agent  
+spec:  
+  selector:  
+    matchLabels:  
+      k8s-app: fluentd-agent  
+  template:  
+    metadata:  
+      labels:  
+        k8s-app: fluentd-agent  
+    spec:  
+      containers:  
+      - name: fluentd  
+        image: quay.io/fluentd_elasticsearch/fluentd:v4.5.2
+```
