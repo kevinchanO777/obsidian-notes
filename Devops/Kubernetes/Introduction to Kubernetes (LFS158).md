@@ -599,3 +599,82 @@ spec:
         ports:  
         - containerPort: 80
 ```
+
+To come up the above template, we can use the following <mark style="background: #BBFABBA6;">imperative</mark> command `create`:
+```sh
+kubectl create deployment nginx-deployment \  
+--image=nginx:1.20.2 --port=80 --replicas=3 \  
+--dry-run=client -o yaml > nginx-deploy.yaml
+```
+
+And then `apply`the generated yaml using the following <mark style="background: #FF5582A6;">declarative</mark> method:
+```sh
+# Apply the deployment file
+kubectl apply -f nginx-deploy.yaml
+
+# Display nginx-deploy related resources
+kubectl get deploy,rs,po -l app=nginx-deployment
+```
+
+Be aware of **Configuration Drift !!!!**
+
+Once the Deployment object is created, the Kubernetes system attaches the **status** field to the object and populates it with all necessary status fields.
+
+In the following example, a new **Deployment** creates **ReplicaSet** **A** which then creates **3 Pods**, with each Pod Template configured to run one **nginx:1.20.2** container image. In this case, the **ReplicaSet A** is associated with **nginx:1.20.2** representing a state of the **Deployment**. This particular state is recorded as **Revision 1**.
+![[Pasted image 20250825155900.png]]
+
+### Deployment -  Rolling Update
+
+Let's say we want to update the container image from **nginx:1.20.2** to **nginx:1.21.5**
+
+A **rolling update** is triggered when we update specific properties of the Pod Template for a deployment. While planned changes such as updating the container image, container port, volumes, and mounts would trigger a new Revision, other operations that are dynamic in nature, like scaling or labeling the deployment, do not trigger a rolling update, thus do not change the Revision number.
+
+Once the rolling update has completed, the **Deployment** will show both **ReplicaSets A** and **B**, where **A** is scaled to 0 (zero) Pods, and **B** is scaled to 3 Pods. This is how the Deployment records its prior state configuration settings, as **Revisions**.
+
+**Deployment (ReplicaSet B Created)**
+![[Pasted image 20250825161747.png]]
+
+
+Once **ReplicaSet B** and its **3 Pods** versioned **1.21.5** are ready, the **Deployment** starts actively managing them. However, the Deployment keeps its prior configuration states saved as Revisions which play a key factor in the **<mark style="background: #FF5582A6;">rollback</mark>** capability of the Deployment - returning to a prior known configuration state. In our example, if the performance of the new **nginx:1.21.5** is not satisfactory, the Deployment can be rolled back to a prior Revision, in this case from **Revision 2** back to **Revision 1** running **nginx:1.20.2** once again.
+
+**Deployment Points to ReplicaSet B**
+![[Pasted image 20250825161821.png]]
+
+```sh
+
+# Check rollout history
+kubectl rollout history deploy <name>
+# Show details about a specific revision
+kubectl rollout history deploy <name> --revision=1
+
+# Update image (note the container name is defined in deployments.yaml)
+kubectl set image deploy <name> CONTAINER_NAME_1=IMAGE_1
+# Example rollout update
+kubectl set image deploy nginx-deployment nginx=nginx:1.23
+# Alternative rollout update
+kubectl edit deployment/nginx-deployment
+
+
+# Example rollback
+kubectl rollout undo deploy nginx-deployment --to-revision=1
+```
+
+
+Notice how the original ReplicaSet is remained (scaled down to 0) so that we can rollback using its' state!!!
+![[Screenshot 2025-08-25 at 4.36.37 PM.png]]
+
+
+
+After rolling back to revision 1, if you check the new rollout history you will only see revision 2 and 3. 
+
+3 represent the current state (which was 1) and 2 remains.
+
+![[Screenshot 2025-08-25 at 4.44.47 PM.png]]
+
+
+### Daemon Sets
+
+A DaemonSet defines Pods that provide node-local facilities. These might be fundamental to the operation of your cluster, such as a networking helper tool, or be part of an add-on.
+
+<mark style="background: #ADCCFFA6;">A DaemonSet ensures that all (or some) Nodes run a copy of a Pod</mark>. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created.
+
