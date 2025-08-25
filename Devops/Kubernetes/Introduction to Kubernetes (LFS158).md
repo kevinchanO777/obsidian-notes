@@ -274,7 +274,7 @@ Minikube is one of the easiest, most flexible and popular methods to run an all-
 minikube start
 
 # Custom minikube profile
-minikube start --nodes=2 --kubernetes-version=v1.33.1 --driver=docker --profile doubledocker
+minikube start --nodes=2 --kubernetes-version=v1.33.1 --driver=docker --profile lfs158
 
 # Check the status of the Minikube cluster
 minikube status
@@ -334,6 +334,10 @@ To access the dashboard from Minikube, we can use the **minikube dashboard** c
 minikube addons list
 
 minikube addons enable metrics-server
+
+# View resouces usage
+kubectl top po
+kubectl top node
 
 minikube addons enable dashboard
 
