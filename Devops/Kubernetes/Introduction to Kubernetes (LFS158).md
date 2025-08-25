@@ -548,14 +548,16 @@ spec:
 # Create the above replicaset
 kubectl apply -f redis-rs.yaml
 
-# Get ReplicaSets
+# Get ReplicaSets and Pods
 kubectl get rs
 kubectl get replicatsets
+kubectl get rs,po
 
 kubectl scale rs frontend --replicas=4
 
 kubectl get rs frontend -o yaml
 kubectl get rs frontend -o json
+kubectl get rs,po -o wide
 
 kubectl describe rs frontend
 
