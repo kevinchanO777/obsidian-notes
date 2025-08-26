@@ -39,3 +39,6 @@ Terminal UI
 - [k9s](https://github.com/derailed/k9s)(TUI for managing kubernentes)
 - [popeye](https://github.com/derailed/popeye) (can be integrated in k9s)
 - stern (prints logs for multiple pods at the same time)
+
+tmux
+- [tpm](https://github.com/tmux-plugins/tpm)
