@@ -29,7 +29,13 @@ Monitoring, observability and telemetry
 	- AWS CloudWatch
 	- AWS CloudTrail
 
+Kubernetes:
+- ArgoCD
+- kubeadm
+
 Terminal UI
 - lazygit
 - lazydocker
-- k9s
+- [k9s](https://github.com/derailed/k9s)(TUI for managing kubernentes)
+- [popeye](https://github.com/derailed/popeye) (can be integrated in k9s)
+- stern (prints logs for multiple pods at the same time)
