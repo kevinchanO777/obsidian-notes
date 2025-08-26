@@ -19,6 +19,7 @@ CI/CD
 - Github actions
 - GitLab
 - CircleCI
+- Gitea for self-hosting
 
 Monitoring, observability and telemetry
 - Grafana stack
@@ -27,3 +28,8 @@ Monitoring, observability and telemetry
 - Cloud-native solutions
 	- AWS CloudWatch
 	- AWS CloudTrail
+
+Terminal UI
+- lazygit
+- lazydocker
+- k9s
