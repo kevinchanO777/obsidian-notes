@@ -891,7 +891,208 @@ The manifest defines a bind between the **cluster-admin** ClusterRole and all 
 To enable the RBAC mode, we start the API server with the **--authorization-mode=RBAC** option, allowing us to dynamically configure policies. For more details, please review the [RBAC mode](https://kubernetes.io/docs/reference/access-authn-authz/rbac/).
 
 
+### RBAC Authentication &  Authorization Lab 
+
+### 1. Certificate Management
+- **Purpose**: Create client certificates for user authentication
+- **Files**: `bob.csr`, `signing-request.yaml`
+
+#### Certificate Signing Request (CSR)
+```yaml
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: bob-csr
+spec:
+  groups:
+    - system:authenticated
+  request: <base64-encoded-csr>
+  signerName: kubernetes.io/kube-apiserver-client
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+```
+
+#### Key Concepts
+- **CSR**: Contains user identity + public key (derived from private key)
+- **Private Key**: Stays secret on user's machine
+- **Public Key**: Sent to cluster for signing
+- **Security**: Private key never leaves user's machine
+
+### 2. User Authentication Setup
+
+#### Step 1: Generate Private Key & CSR
+```bash
+# Generate private key (keep secret!)
+openssl genrsa -out bob.key 2048
+
+# Create CSR using private key
+openssl req -new -key bob.key -out bob.csr -subj "/CN=bob/O=leraner"
+```
+
+#### Step 2: Submit CSR to Cluster
+```bash
+# Apply CSR to cluster
+kubectl apply -f rbac/signing-request.yaml
+
+# Approve CSR (requires cluster-admin)
+kubectl certificate approve bob-csr
+```
+
+#### Step 3: Extract Signed Certificate
+```bash
+# Get signed certificate
+kubectl get csr bob-csr -o jsonpath='{.status.certificate}' | base64 -d > bob.crt
+```
+
+#### Step 4: Configure kubectl
+```bash
+# Add user credentials
+kubectl config set-credentials bob \
+  --client-certificate='bob.crt' \
+  --client-key='bob.key'
+
+# Create context
+kubectl config set-context bob-context \
+  --cluster=lfs158 \
+  --user=bob \
+  --namespace=default
+
+# Switch to context
+kubectl config use-context bob-context
+
+# Or 
+kubectl --context=bob-context get pods
+```
+
+### 3. RBAC Authorization
+
+#### Role Definition
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+```
+
+**What this role allows**:
+- **Resources**: Pods in the `default` namespace
+- **Actions**: Get, watch, and list pods
+- **Scope**: Namespace-scoped (only affects `default` namespace)
+
+#### RoleBinding
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: User
+    name: bob
+    apiGroup: rbac.authorization.k8s.io
+```
+
+**What this binding does**:
+- **Binds**: User `bob` to the `pod-reader` role
+- **Scope**: Applies to `default` namespace
+- **Result**: Bob can read pods in default namespace
+
+### 4. Complete Workflow
+
+```bash
+# 1. Create and approve CSR
+kubectl apply -f rbac/signing-request.yaml
+kubectl certificate approve bob-csr
+
+# 2. Extract certificate
+kubectl get csr bob-csr -o jsonpath='{.status.certificate}' | base64 -d > bob.crt
+
+# 3. Configure kubectl for bob
+kubectl config set-credentials bob --client-certificate='bob.crt' --client-key='bob.key'
+kubectl config set-context bob-context --cluster=lfs158 --user=bob
+kubectl config use-context bob-context
+
+# 4. Create RBAC resources
+kubectl apply -f rbac/role.yaml
+kubectl apply -f rbac/rolebinding.yaml
+
+# 5. Test access
+kubectl get pods                    # Should work (pod-reader role)
+kubectl get services               # Should fail (not authorized)
+```
+
+## Key Concepts Summary
+
+### Authentication vs Authorization
+- **Authentication**: "Who are you?" (certificates, tokens)
+- **Authorization**: "What can you do?" (roles, rolebindings)
+
+### RBAC Components
+1. **Role**: Defines permissions (what actions on what resources)
+2. **RoleBinding**: Binds users/groups to roles
+3. **ClusterRole**: Cluster-wide permissions
+4. **ClusterRoleBinding**: Cluster-wide role bindings
+
+### Security Model
+- **Principle of Least Privilege**: Users get minimum necessary permissions
+- **Namespace Isolation**: Roles can be scoped to specific namespaces
+- **Certificate-based Auth**: Secure, non-repudiable authentication
+
+### Common Use Cases
+- **Developers**: Read access to specific namespaces
+- **DevOps**: Manage deployments and services
+- **Cluster Admins**: Full cluster access
+- **Read-only Users**: View resources without modification
+
+## Troubleshooting
+
+### Common Issues
+1. **CSR not approved**: Check cluster-admin permissions
+2. **Certificate expired**: Regenerate CSR and certificate
+3. **Permission denied**: Verify role and rolebinding exist
+4. **Wrong namespace**: Check namespace scoping
+
+### Debug Commands
+```bash
+# Check current context
+kubectl config current-context
+
+# Verify user credentials
+kubectl config view
+
+# Check RBAC resources
+kubectl get roles,rolebindings -n default
+
+# Test permissions
+kubectl auth can-i get pods
+kubectl auth can-i create deployments
+```
+
+## Best Practices
+
+1. **Use namespaces** to isolate permissions
+2. **Follow least privilege** principle
+3. **Regular certificate rotation** for security
+4. **Document roles** and their purposes
+5. **Use groups** instead of individual users when possible
+6. **Regular access reviews** to ensure appropriate permissions
+
+---
+
+*This lab demonstrates the complete RBAC workflow from certificate generation to role-based access control implementation.*
 
 
+### Admission Control
 
 
