@@ -712,3 +712,66 @@ spec:
 A containerized application deployed to a Kubernetes cluster may need to reach other such applications, or it may need to be accessible to other applications and possibly clients. This is problematic because the container does not expose its ports to the cluster's network, and it is not discoverable either. The solution would be a simple port mapping, as offered by a typical container host. However, due to the complexity of the Kubernetes framework, such a simple port mapping is not that "simple". The solution is much more sophisticated, with the involvement of the kube-proxy node agent, IP tables, routing rules, cluster DNS server, all collectively implementing a micro-load balancing mechanism that exposes a container's port to the cluster's network, even to the outside world if desired. This mechanism is called a Service, and it is the recommended method to expose any containerized application to the Kubernetes network. The benefits of the Kubernetes Service becomes more obvious when exposing a multi-replica application, when multiple containers running the same image need to expose the same port. This is where the simple port mapping of a container host would no longer work, but the Service would have no issue implementing such a complex requirement.
 
 This is only a brief introduction of the Kubernetes Service resource. Services, their types, configuration options, and more will be discussed in a later chapter.
+
+
+### Chapter 9 - Authentication, Authorization, Admission Control
+
+To access and manage Kubernetes resources or objects in the cluster, we need to access a specific API endpoint on the API server. Each access request goes through the following access control stages:
+
+- **Authentication**  
+    Authenticate a user based on credentials provided as part of API requests.
+- **Authorization**  
+    Authorizes the API requests submitted by the authenticated user.
+- **Admission Control**  
+    Software modules that validate and/or modify user requests.
+
+The following image depicts the above stages:
+![[Pasted image 20250828162629.png]]
+
+
+
+If properly configured, Kubernetes can also support [anonymous requests](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#anonymous-requests), along with requests from Normal Users and Service Accounts. [User impersonation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#user-impersonation) is also supported allowing a user to act as another user, a helpful feature for administrators when troubleshooting authorization policies.
+
+For authentication, Kubernetes uses a series of [authentication modules](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies):
+
+- **X509 Client Certificates  
+    **To enable client certificate authentication, we need to reference a file containing one or more certificate authorities by passing the **--client-ca-file=SOMEFILE** option to the API server. The certificate authorities mentioned in the file would validate the client certificates presented by users to the API server. A demonstration video covering this topic can be found at the end of this chapter.
+- **Static Token File**  
+    We can pass a file containing pre-defined bearer tokens with the **--token-auth-file=SOMEFILE** option to the API server. Currently, these tokens would last indefinitely, and they cannot be changed without restarting the API server.
+- **Bootstrap Tokens**  
+    Tokens used for bootstrapping new Kubernetes clusters.
+- **Service Account Tokens**  
+    Automatically enabled authenticators that use signed bearer tokens to verify requests. These tokens get attached to Pods using the Service Account Admission Controller, which allows in-cluster processes to talk to the API server.
+- **OpenID Connect Tokens**  
+    OpenID Connect helps us connect with OAuth2 providers, such as Microsoft Entra ID (previously known as Azure Active Directory), Salesforce, and Google, to offload the authentication to external services.
+- **Webhook Token Authentication**  
+    With Webhook-based authentication, verification of bearer tokens can be offloaded to a remote service.
+- **Authenticating Proxy**  
+    Allows for the programming of additional authentication logic.
+
+We can enable multiple authenticators, and the first module to successfully authenticate the request short-circuits the evaluation. To ensure successful user authentication, we should enable at least two methods: the service account tokens authenticator and one of the user authenticators.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
