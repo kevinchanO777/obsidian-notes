@@ -714,7 +714,7 @@ A containerized application deployed to a Kubernetes cluster may need to reach o
 This is only a brief introduction of the Kubernetes Service resource. Services, their types, configuration options, and more will be discussed in a later chapter.
 
 
-### Chapter 9 - Authentication, Authorization, Admission Control
+# Chapter 9 - Authentication, Authorization, Admission Control
 
 To access and manage Kubernetes resources or objects in the cluster, we need to access a specific API endpoint on the API server. Each access request goes through the following access control stages:
 
@@ -728,7 +728,7 @@ To access and manage Kubernetes resources or objects in the cluster, we need to 
 The following image depicts the above stages:
 ![[Pasted image 20250828162629.png]]
 
-
+### Authentication
 
 If properly configured, Kubernetes can also support [anonymous requests](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#anonymous-requests), along with requests from Normal Users and Service Accounts. [User impersonation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#user-impersonation) is also supported allowing a user to act as another user, a helpful feature for administrators when troubleshooting authorization policies.
 
@@ -752,25 +752,143 @@ For authentication, Kubernetes uses a series of [authentication modules](https:
 We can enable multiple authenticators, and the first module to successfully authenticate the request short-circuits the evaluation. To ensure successful user authentication, we should enable at least two methods: the service account tokens authenticator and one of the user authenticators.
 
 
+### Authorization
+
+After a successful authentication, users can send the API requests to perform different operations. Here, these API requests get [authorized](https://kubernetes.io/docs/reference/access-authn-authz/authorization/) by Kubernetes using various authorization modules that allow or deny the requests.
+
+Some of the API request attributes that are reviewed by Kubernetes include user, group, Resource, Namespace, or API group, to name a few. Next, these attributes are evaluated against policies. If the evaluation is successful, then the request is allowed, otherwise it is denied. Similar to the Authentication step, Authorization has multiple modules, or authorizers. More than one module can be configured for one Kubernetes cluster, and each module is checked in sequence. If any authorizer approves or denies a request, then that decision is returned immediately.
+
+#### Node Authorization
+
+Node authorization is a special-purpose authorization mode that specifically authorizes API requests made by kubelets.
+
+The Node authorizer allows a kubelet to perform API operations. This includes:
+
+Read operations:
+- services
+- endpoints
+- nodes
+- pods
+- secrets, configmaps, persistent volume claims and persistent volumes related to pods bound to the kubelet's node
+
+Kubelets are limited to reading their own Node objects, and only reading pods bound to their node.
+
+
+#### Attribute-Based Access Control (ABAC)
+- With the ABAC authorizer, Kubernetes grants access to API requests, which combine policies with attributes. In the following example, user _bob_ can only read Pods in the Namespace **lfs158**.
+    
+    **{**  
+      **"apiVersion": "abac.authorization.kubernetes.io/v1beta1",**  
+      **"kind": "Policy",**  
+      **"spec": {**  
+        **"user": "bob",**  
+        **"namespace": "lfs158",**  
+        **"resource": "pods",**  
+        **"readonly": true**  
+      **}**  
+    **}**
+    
+    To enable ABAC mode, we start the API server with the **--authorization-mode=ABAC** option, while specifying the authorization policy with **--authorization-policy-file=PolicyFile.json**. For more details, please review the [ABAC authorization documentation](https://kubernetes.io/docs/reference/access-authn-authz/abac/)
+
+
+#### Webhook
+
+In Webhook mode, Kubernetes can request authorization decisions to be made by third-party services, which would return true for successful authorization, and false for failure. In order to enable the Webhook authorizer, we need to start the API server with the **--authorization-webhook-config-file=SOME_FILENAME** option, where **SOME_FILENAME** is the configuration of the remote authorization service. For more details, please see the [Webhook mode documentation](https://kubernetes.io/docs/reference/access-authn-authz/webhook/).
 
 
 
+#### Role-Based Access Control (RBAC)
+
+In general, with RBAC we regulate the access to resources based on the Roles of individual users. In Kubernetes, multiple Roles can be attached to subjects like users, service accounts, etc. While creating the Roles, we restrict resource access by specific operations, such as **create**, **get**, **update**, **patch**, etc. These operations are referred to as verbs. In RBAC, we can create two kinds of Roles:
+
+- <mark style="background: #BBFABBA6;">Role</mark>  
+    A Role grants access to resources within a specific Namespace.
+- <mark style="background: #BBFABBA6;">ClusterRole</mark>  
+    A ClusterRole grants the same permissions as Role does, but its scope is cluster-wide.
+
+In this course, we will focus on the first kind, <mark style="background: #BBFABBA6;">Role</mark>. Below you will find an example:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role  
+metadata:  
+  namespace: lfs158  
+  name: pod-reader  
+rules:  
+- apiGroups: [""] # "" indicates the core API group  
+  resources: ["pods"]  
+  verbs: ["get", "watch", "list"]
+```
+
+The manifest defines a **pod-reader** role, which has access only to read the Pods of **lfs158** Namespace.
+
+For comparison, a <mark style="background: #BBFABBA6;">ClusterRole</mark> example is provided below:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin
+rules:
+- apiGroups:
+  - '*' # All API groups
+  resources:
+  - '*' # All resources
+  verbs:
+  - '*' # All operations
+- nonResourceURLs:
+  - '*' # All non resource URLs, such as "/healthz"
+  verbs:
+  - '*' # All operations
+```
+
+The manifest defines a **cluster-admin** cluster role that is fully permissive.
+
+Once the role is created, we can <mark style="background: #FF5582A6;">bind it to users with a RoleBinding object</mark>. There are two kinds of RoleBindings:
+
+- <mark style="background: #ADCCFFA6;">RoleBinding</mark>  
+    It allows us to bind users to the same namespace as a Role. We could also refer to a ClusterRole in RoleBinding, which would grant permissions to Namespace resources defined in the ClusterRole within the RoleBinding’s Namespace.
+- <mark style="background: #ADCCFFA6;">ClusterRoleBinding</mark>  
+    It allows us to grant access to resources at a cluster-level and to all Namespaces.
+
+In this course, we will focus on the first kind <mark style="background: #ADCCFFA6;">RoleBinding</mark>. Below, you will find an example:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-read-access
+  namespace: lfs158
+subjects:
+- kind: User
+  name: bob
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+```
+
+The manifest defines a bind between the **pod-reader** Role and user **bob**, to restrict the user to only read the Pods of the **lfs158** Namespace.
+
+For comparison, a <mark style="background: #ADCCFFA6;">ClusterRoleBinding</mark> example is provided below:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:admins
+```
 
 
+The manifest defines a bind between the **cluster-admin** ClusterRole and all users of the group **system:admins**.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+To enable the RBAC mode, we start the API server with the **--authorization-mode=RBAC** option, allowing us to dynamically configure policies. For more details, please review the [RBAC mode](https://kubernetes.io/docs/reference/access-authn-authz/rbac/).
 
 
 
