@@ -2,7 +2,7 @@
 tags:
   - obsidian
 ---
-
+# TO
 ###### 1. Press `cmd` and hover to preview note - [doc](https://help.obsidian.md/Plugins/Page+preview)
 
 ###### 2. Callouts - [doc](https://help.obsidian.md/Editing+and+formatting/Callouts)
