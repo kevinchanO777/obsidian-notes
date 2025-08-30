@@ -3,5 +3,7 @@
   "obsidian-icon-folder",
   "calendar",
   "obsidian-git",
-  "highlightr-plugin"
+  "highlightr-plugin",
+  "automatic-table-of-contents",
+  "obsidian-plugin-toc"
 ]

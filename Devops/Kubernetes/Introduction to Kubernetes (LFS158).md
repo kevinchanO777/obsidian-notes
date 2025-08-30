@@ -1,3 +1,14 @@
+```table-of-contents
+title: 
+style: nestedList # TOC style (nestedList|nestedOrderedList|inlineFirstLevel)
+minLevel: 0 # Include headings from the specified level
+maxLevel: 0 # Include headings up to the specified level
+include: 
+exclude: 
+includeLinks: true # Make headings clickable
+hideWhenEmpty: false # Hide TOC if no headings are found
+debugInConsole: false # Print debug info in Obsidian console
+```
 
 # Chapter 1 - From Monolith to Microservices:
 
@@ -1115,3 +1126,51 @@ Kubernetes admission control can also be implemented though custom plugins, for 
 kubectl -n kube-system describe po kube-apiserver-<ns> | grep admission
 ```
 ![[Screenshot 2025-08-30 at 5.36.42 PM.png]]
+
+To modify the list of enabled admission plugins we can:
+```bash
+# SSH into the control plane node
+minikube ssh
+
+# Check the existing list of admission plugins 
+sudo cat /etc/kubernetes/manifest/kube-apiserver.yaml | grep admission
+
+# Backup the existing manifest
+sudo cp /etc/kubernetes/manifest/kube-apiserver.yaml /kube-apiserver.yaml.backup
+
+# Modify e.g. add a new plugin - AlwaysPullImages
+sudo vi /etc/kubernetes/manifest/kube-apiserver.yaml
+
+# Exit the shell the view the changes
+exit
+```
+
+The node controller should automatically restart the kube-apiserver and apply the new manifest with the updated list of admission plugins. To see how this affect our subsequent api request:
+
+```sh
+# kube-apiserver should be 'young' in age
+kubectl get po -A | grep api
+
+# Try creating a new 'mutated' pod
+kubectl run mutated --image=nginx --image-pull-policy=IfNotPresent
+
+# Notice how the policy is mutated by our admission controller
+kubectl get po mutated -o yaml | grep imagePull
+```
+
+Newly <mark style="background: #BBFABBA6;">created pod with mutated effect</mark>:
+
+![[Screenshot 2025-08-30 at 6.04.14 PM.png]]
+
+Existing pod <mark style="background: #FF5582A6;">WON'T change:</mark>
+
+![[Pasted image 20250830181041.png]]
+
+
+# Chapter 10 - Services
+
+Although the microservices driven architecture aims to decouple the components of an application, microservices still need agents to logically tie or group them together for management purposes, or to load balance traffic to the ones that are part of such a logical set.
+
+In this chapter, we will learn about [Service](https://kubernetes.io/docs/concepts/services-networking/service/) objects used to abstract the communication between cluster internal microservices, or with the external world. A Service offers a single DNS entry for a stateless containerized application managed by the Kubernetes cluster, regardless of the number of its replicas, by providing a common load balancing access point to a set of pods logically grouped and managed by a controller such as a Deployment, ReplicaSet, or DaemonSet. 
+
+We will also learn about the kube-proxy daemon, which runs on each control plane and worker node to implement the services' configuration and to provide access to services. In addition we will discuss service discovery and service types, which decide the access scope of a service.
