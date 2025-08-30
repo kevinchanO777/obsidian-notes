@@ -1095,4 +1095,13 @@ kubectl auth can-i create deployments
 
 ### Admission Control
 
+[Admission controllers](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) are used to specify granular access control policies, which include allowing privileged containers, checking on resource quota, etc. We force these policies using different admission controllers, like <mark style="background: #ADCCFFA6;">LimitRanger</mark>, <mark style="background: #ADCCFFA6;">ResourceQuota</mark>, <mark style="background: #ADCCFFA6;">DefaultStorageClass</mark>, <mark style="background: #ADCCFFA6;">AlwaysPullImages</mark>, etc. They come into effect only after API requests are authenticated and authorized. Admission controllers fall under two categories - <mark style="background: #FF5582A6;">validating or mutating</mark>, but there are controllers that are both validating and mutating. The mutating controllers can modify the requested objects.
+
+To use admission controls, we must start the Kubernetes API server with the **--enable-admission-plugins**, which takes a comma-delimited, ordered list of controller names, such as:
+
+**--enable-admission-plugins=NamespaceLifecycle,ResourceQuota,PodSecurity,DefaultStorageClass**
+
+Kubernetes has some admission controllers enabled by default. For more details, please review the [list of admission controllers](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#what-does-each-admission-controller-do).
+
+Kubernetes admission control can also be implemented though custom plugins, for a [dynamic admission control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) method. These plugins are developed as extensions and run as admission webhooks.
 
