@@ -1111,3 +1111,4 @@ Kubernetes admission control can also be implemented though custom plugins, for 
 # To view the list of admission controllers enabled in current cluster
 kubectl -n kube-system describe po kube-apiserver-<ns> | grep admission
 ```
+![[admission-control-phases.png]]
