@@ -294,6 +294,9 @@ minikube profile <profile_name>
 minikube node list
 minikube ip
 
+# Log into the minikube environment
+minikube ssh
+
 ```
 
 The **minikube start** by default selects a driver isolation software, such as a hypervisor or a container runtime, if one (VitualBox) or multiple are installed on the host workstation. In addition it downloads the latest Kubernetes version components. With the selected driver software it provisions a single VM named _minikube_ (with hardware profile of CPUs=2, Memory=6GB, Disk=20GB) or container (Docker) to host the default single-node all-in-one Kubernetes cluster.
@@ -1111,4 +1114,4 @@ Kubernetes admission control can also be implemented though custom plugins, for 
 # To view the list of admission controllers enabled in current cluster
 kubectl -n kube-system describe po kube-apiserver-<ns> | grep admission
 ```
-![[admission-control-phases.png]]
+![[Screenshot 2025-08-30 at 5.36.42 PM.png]]
