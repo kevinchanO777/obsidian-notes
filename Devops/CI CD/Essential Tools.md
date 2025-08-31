@@ -30,8 +30,10 @@ Monitoring, observability and telemetry
 	- AWS CloudTrail
 
 Kubernetes:
-- ArgoCD
-- kubeadm
+- ArgoCD -> Deployment automation, monitoring
+- kubeadm -> Deploy production ready k8s cluster
+- minikube -> Local k8s cluster with ease
+- Tilt -> Development tool kits for k8s, CRI images (e.g. auto build image and reload pod, better UI for logs)
 
 Terminal UI
 - lazygit
