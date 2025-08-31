@@ -34,11 +34,11 @@ Kubernetes:
 - kubeadm -> Deploy production ready k8s cluster
 - minikube -> Local k8s cluster with ease
 - Tilt -> Development tool kits for k8s, CRI images (e.g. auto build image and reload pod, better UI for logs)
+- [k9s](https://github.com/derailed/k9s)(TUI for managing kubernentes)
 
 Terminal UI
 - lazygit
 - lazydocker
-- [k9s](https://github.com/derailed/k9s)(TUI for managing kubernentes)
 - [popeye](https://github.com/derailed/popeye) (can be integrated in k9s)
 - stern (prints logs for multiple pods at the same time)
 
