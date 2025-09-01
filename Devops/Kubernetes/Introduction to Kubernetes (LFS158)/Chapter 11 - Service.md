@@ -49,7 +49,7 @@ We assign a name to the logical grouping, referred to as a Service. The Service 
 
 Services can expose single Pods, ReplicaSets, Deployments, DaemonSets, and StatefulSets. When exposing the Pods managed by an operator, the Service's Selector may use the same label(s) as the operator. A clear benefit of a Service is that it watches application Pods for any changes in count and their respective IP addresses while automatically updating the list of corresponding endpoints. Even for a single-replica application, run by a single Pod, the Service is beneficial during self-healing (replacement of a failed Pod) as it immediately directs traffic to the newly deployed healthy Pod.
 
-### Service Object Example
+## Service Object Example
 
 The following is an example of a Service object definition. This represents the declarative method to define an object, and can serve as a template for a much more complex Service definition manifest if desired. By omitting the Service **type** from the definition manifest, we create the default service type, the **ClusterIP** type (the ClusterIP Service type will be covered in an upcoming lesson).
 
@@ -78,5 +78,19 @@ kubectl expose deploy frontend --name=frontend-svc --port=80 --target-port=5000
 
 The **expose** command parses the referenced Deployment object to extract valuable pairing details such as Name, Label, Selector, and containerPort to populate these values in the Service object. However, especially in cases when the Service **port** and Service **targetPort** values are expected to be distinct (**80** and **5000** respectively), it is best to explicitly supply these values with the **expose** command. In addition, we decided to change the name of the Service with the **name** option (the default behavior is for the Service object to inherit the exposed Deployment’s name **frontend**).
 
+```bash
+kubectl get service,endpoints frontend-svc
+# or
+**kubectl get svc,ep frontend-svc**
+```
 
 ![[Pasted image 20250901202307.png]]
+
+Now ssh into minikube and try `curl <service_ip>:<service_port>` which will sent a get request to one of the pod at the defined exposed port i.e. 5000 
+
+
+This example map service port 80 to pod port 80 which the container is running nginx. You see how k8s automatically load balance our requests.
+![[Pasted image 20250901203415.png]]
+
+
+## kube-proxy

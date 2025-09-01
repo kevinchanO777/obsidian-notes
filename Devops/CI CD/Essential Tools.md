@@ -44,3 +44,6 @@ Terminal UI
 
 tmux
 - [tpm](https://github.com/tmux-plugins/tpm)
+
+stress-testing
+- k6
