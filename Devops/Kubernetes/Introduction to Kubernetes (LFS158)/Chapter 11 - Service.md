@@ -7,6 +7,7 @@ To access the application, a user or another application needs to connect to a P
 
 To overcome this situation, Kubernetes provides a higher-level abstraction called _Service_, which logically groups Pods and defines a policy to access them. This grouping is achieved via _Labels_ and _Selectors_. This logical grouping strategy is used by Pod controllers, such as ReplicaSets, Deployments, and even DaemonSets. Below is a Deployment definition manifest for the **frontend** app, to aid with the correlation of Labels, Selectors, and port values between the Deployment controller, its Pod replicas, and the Service definition manifest presented in an upcoming section.
 
+`frontend-deploy.yaml`
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -52,6 +53,7 @@ Services can expose single Pods, ReplicaSets, Deployments, DaemonSets, and State
 
 The following is an example of a Service object definition. This represents the declarative method to define an object, and can serve as a template for a much more complex Service definition manifest if desired. By omitting the Service **type** from the definition manifest, we create the default service type, the **ClusterIP** type (the ClusterIP Service type will be covered in an upcoming lesson).
 
+`forntend-svc.yaml`
 ```yaml
 apiVersion: v1
 kind: Service
@@ -65,3 +67,11 @@ spec:
     port: 80
     targetPort: 5000
 ```
+
+To deploy we call:
+```bash
+kubectl apply -f 'frontend-svc.yaml'
+
+# To expose 
+```
+
