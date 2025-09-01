@@ -26,7 +26,7 @@ spec:
           app: frontend
       spec:
         containers:
-        - image: frontend-application
+        - image: <frontend-application-image>
         name: frontend-application
         ports:
         - containerPort: 5000
@@ -72,6 +72,11 @@ To deploy we call:
 ```bash
 kubectl apply -f 'frontend-svc.yaml'
 
-# To expose 
+# To expose the Deployment Pods
+kubectl expose deploy frontend --name=frontend-svc --port=80 --target-port=5000
 ```
 
+The **expose** command parses the referenced Deployment object to extract valuable pairing details such as Name, Label, Selector, and containerPort to populate these values in the Service object. However, especially in cases when the Service **port** and Service **targetPort** values are expected to be distinct (**80** and **5000** respectively), it is best to explicitly supply these values with the **expose** command. In addition, we decided to change the name of the Service with the **name** option (the default behavior is for the Service object to inherit the exposed Deployment’s name **frontend**).
+
+
+![[Pasted image 20250901202307.png]]
