@@ -76,7 +76,7 @@ A ConfigMap allows you to decouple environment-specific configuration from your�
 You can learn more details about Volume Types from the [documentation](https://kubernetes.io/docs/concepts/storage/volumes/). However, do not be alarmed by the “deprecated” and “removed” notices. They have been added as means of tracking the original in-tree plugins which eventually migrated to the CSI driver implementation. Kubernetes native plugins do not show such a notice.
 
 
-## Persistent Volume
+## PersistentVolumes
 
 In a typical IT environment, storage is managed by the storage/system administrators. The end user will just receive instructions to use the storage but is not involved with the underlying storage management.
 
@@ -106,4 +106,11 @@ For a complete list, as well as more details, you can check out the [types of P
 
 A [PersistentVolumeClaim (PVC)](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims) is a request for storage by a user. Users request for PersistentVolume resources based on storage class, [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes), size, and optionally volume mode. There are four access modes: <mark style="background: #ADCCFFA6;">ReadWriteOnce (read-write by a single node), ReadOnlyMany (read-only by many nodes), ReadWriteMany (read-write by many nodes), and ReadWriteOncePod (read-write by a single pod).</mark> The optional volume modes, filesystem or block device, allow volumes to be mounted into a pod's directory or as a raw block device respectively. By design Kubernetes does not support object storage, but it can be implemented with the help of custom resource types. Once a suitable PersistentVolume is found, it is bound to a PersistentVolumeClaim.
 
+**PersistentVolumeClaim**
 ![[Pasted image 20250902205359.png]]
+
+**PersistentVolumeClaim Used In a Pod**
+![[Pasted image 20250902223134.png]]
+Once a user finishes its work, the attached PersistentVolumes can be released. The underlying PersistentVolumes can then be _reclaimed_ (for an admin to verify and/or aggregate data), _deleted_ (both data and volume are deleted), or _recycled_ for future usage (only data is deleted), based on the configured **persistentVolumeReclaimPolicy** property.
+
+To learn more, you can check out the [PersistentVolumeClaims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims).
