@@ -249,4 +249,117 @@ With the **[LoadBalancer](https://kubernetes.io/docs/concepts/services-networki
 
 ![[Pasted image 20250902154428.png]]
 
-The **LoadBalancer** _ServiceType_ will only work if the underlying infrastructure supports the automatic creation of Load Balancers and have the respective support in Kubernetes, as is the case with the Google Cloud Platform and AWS. If no such feature is configured, the LoadBalancer IP address field is not populated, it remains in Pending state, but the Service will still work as a typical NodePort type Service.
+The **LoadBalancer** _ServiceType_ will only work if the underlying infrastructure supports the automatic creation of Load Balancers and have the respective support in Kubernetes, as is the case with the Google Cloud Platform and AWS. <mark style="background: #FF5582A6;">If no such feature is configured, the LoadBalancer IP address field is not populated, it remains in Pending state, but the Service will still work as a typical NodePort type Service.</mark>
+
+
+### Service Type - ExternalName
+
+**[ExternalName](https://kubernetes.io/docs/concepts/services-networking/service/#externalname)** is a special _ServiceType_ that has no Selectors and does not define any endpoints. When accessed within the cluster, it returns a **CNAME** record of an externally configured Service.
+
+<mark style="background: #ADCCFFA6;">The primary use case of this _ServiceType_ is to make externally configured Services like **my-database.example.com** available to applications inside the cluster.</mark> If the externally defined Service resides within the same Namespace, using just the name **my-database** would make it available to other applications and Services within that same Namespace.
+
+Services of type ExternalName map a Service to a DNS name, not to a typical selector such as `my-service` or `cassandra`. You specify these Services with the `spec.externalName` parameter.
+
+This Service definition, for example, maps the `my-service` Service in the `prod` namespace to `my.database.example.com`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  namespace: prod
+spec:
+  type: ExternalName
+  externalName: my.database.example.com
+```
+
+
+### Service Type - ExternalIP
+
+If there are external IPs that route to one or more cluster nodes, Kubernetes Services can be exposed on those `externalIPs`. When network traffic arrives into the cluster, with the external IP (as destination IP) and the port matching that Service, rules and routes that Kubernetes has configured ensure that the traffic is routed to one of the endpoints for that Service.
+
+When you define a Service, you can specify `externalIPs` for any [service type](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types). In the example below, the Service named `"my-service"` can be accessed by clients using TCP, on `"198.51.100.32:80"` (calculated from `.spec.externalIPs[]` and `.spec.ports[].port`).
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app.kubernetes.io/name: MyApp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 49152
+  externalIPs:
+    - 198.51.100.32
+```
+
+
+>Kubernetes does not manage allocation of `externalIPs`; these are the responsibility of the cluster administrator.
+
+
+## [Multi-Port Services](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services)
+
+For some Services, you need to expose more than one port. Kubernetes lets you configure multiple port definitions on a Service object. When using multiple ports for a Service, you must give all of your ports names so that these are unambiguous. For example:
+
+A multi-port Service manifest is provided below:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app.kubernetes.io/name: MyApp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9376
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 9377
+```
+
+
+> [!info] Note
+> As with Kubernetes [names](https://kubernetes.io/docs/concepts/overview/working-with-objects/names) in general, names for ports must only contain lowercase alphanumeric characters and `-`. Port names must also start and end with an alphanumeric character.
+> 
+> For example, the names `123-abc` and `web` are valid, but `123_abc` and `-web` are not.
+
+
+### Port Forwarding
+
+Another application exposure mechanism in Kubernetes is port forwarding. In Kubernetes the port forwarding feature allows users to easily forward a local port to an application port. Thanks to its flexibility, the application port can be a Pod container port, a Service port, and even a Deployment container port (from its Pod template). This allows users to test and debug their application running in a remote cluster by targeting a port on their local workstation (either **[http://localhost:port](http://localhost:port/)** or **[http://127.0.0.1:port](http://127.0.0.1:port/)**), a solution for remote cloud clusters or virtualized on premises clusters.
+
+Port forwarding can be utilized as an alternative to the NodePort Service type because it does not require knowledge of the public IP address of the Kubernetes Node. As long as there are no firewalls blocking access to the desired local workstation port, such as 8080 in the examples below, the port forwarding method can quickly allow access to the application running in the cluster.
+
+Example:
+
+```bash
+kubectl port-forward deploy/frontend 8080:5000 
+
+kubectl port-forward frontend-77cbdf6f79-qsdts 8080:5000 
+
+kubectl port-forward svc/frontend-svc 8080:80
+```
+
+Or using k9s:
+```bash
+# Open k9s
+k9s
+
+# Go to pod tab
+:pod 
+
+# Sift + f to start port forwarding
+<shift-f>
+```
+
+The port forwarding process will close after you quit k9s 
+![[Pasted image 20250902160926.png]]
