@@ -123,6 +123,7 @@ The kube-proxy node agent together with the iptables implement the load-balancin
 
 Both the Cluster and Local options are available for requests generated internally from within the cluster, or externally from applications and clients running outside the cluster. The Service definition manifest below defines both internal and external Local traffic policies. Both are optional settings, and can be used independent of each other, where one can be defined without the other (either internal or external policy).
 
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -136,3 +137,34 @@ spec:
       targetPort: 5000
   internalTrafficPolicy: Local
   externalTrafficPolicy: Local
+```
+
+
+## Service Discovery
+
+As Services are the primary mode of communication between containerized applications managed by Kubernetes, it is helpful to be able to discover them at runtime. Kubernetes supports two methods for discovering Services.
+
+1. Environment variables
+
+As soon as the Pod starts on any worker node, the **kubelet** daemon running on that node adds a set of environment variables in the Pod for all active Services. For example, if we have an active Service called **redis-master**, which exposes port **6379**, and its **ClusterIP** is **172.17.0.6**, then, on a newly created Pod, we can see the following environment variables: `kubectl exec -it <pod> -- printenv`
+
+**REDIS_MASTER_SERVICE_HOST=172.17.0.6**  
+**REDIS_MASTER_SERVICE_PORT=6379**  
+**REDIS_MASTER_PORT=tcp://172.17.0.6:6379**  
+**REDIS_MASTER_PORT_6379_TCP=tcp://172.17.0.6:6379**  
+**REDIS_MASTER_PORT_6379_TCP_PROTO=tcp**  
+**REDIS_MASTER_PORT_6379_TCP_PORT=6379**  
+**REDIS_MASTER_PORT_6379_TCP_ADDR=172.17.0.6**
+
+<mark style="background: #FF5582A6;">With this solution, we need to be careful while ordering our Services, as the Pods will not have the environment variables set for Services which are created after the Pods are created.
+</mark>
+
+2. DNS
+
+Kubernetes has an add-on for [DNS](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/), which creates a DNS record for each Service and its format is **my-svc.my-namespace.svc.cluster.local**. Services within the same Namespace find other Services just by their names. If we add a Service **redis-master** in ;**my-ns** Namespace, all Pods in the same **my-ns** Namespace lookup the Service just by its name, **redis-master**. Pods from other Namespaces, such as **test-ns**, lookup the same Service by adding the respective Namespace as a suffix, such as **redis-master.my-ns** or providing the FQDN of the service as **redis-master.my-ns.svc.cluster.local**.
+
+This is the most common and highly recommended solution. For example, in the previous section's image, we have seen that an internal DNS is configured, which maps our Services **frontend-svc** and **db-svc** to **172.17.0.4** and **172.17.0.5** IP addresses respectively.
+
+If we had a client application accessing the frontend application, the client would only need to “know” the frontend application’s Service name and port, which are frontend-svc and port 80 respectively. From a client application Pod we could possibly run the following command, allowing for the cluster internal name resolution and the kube-proxy to guide the client’s request to a frontend Pod:
+
+**$ kubectl exec client-app-pod-name -c client-container-name -- /bin/sh -c curl -s frontend-svc:80**
