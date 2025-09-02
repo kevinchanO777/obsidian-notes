@@ -114,3 +114,53 @@ A [PersistentVolumeClaim (PVC)](https://kubernetes.io/docs/concepts/storage/per
 Once a user finishes its work, the attached PersistentVolumes can be released. The underlying PersistentVolumes can then be _reclaimed_ (for an admin to verify and/or aggregate data), _deleted_ (both data and volume are deleted), or _recycled_ for future usage (only data is deleted), based on the configured **persistentVolumeReclaimPolicy** property.
 
 To learn more, you can check out the [PersistentVolumeClaims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims).
+
+
+Demo 
+
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: blue-app
+  name: blue-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blue-app
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: blue-app
+        type: canary
+    spec:
+      volumes:
+        - name: host-volume
+          hostPath:
+            path: /home/docker/blue-shared-volume
+      containers:
+        - image: nginx
+          name: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: host-volume
+        - image: debian
+          name: debian
+          volumeMounts:
+            - mountPath: /host-vol
+              name: host-volume
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "echo Welcome to BLUE App! > /host-vol/index.html ; sleep infinity",
+            ]
+status: {}
+
+```
