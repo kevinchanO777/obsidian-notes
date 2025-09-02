@@ -167,4 +167,6 @@ This is the most common and highly recommended solution. For example, in the pre
 
 If we had a client application accessing the frontend application, the client would only need to “know” the frontend application’s Service name and port, which are frontend-svc and port 80 respectively. From a client application Pod we could possibly run the following command, allowing for the cluster internal name resolution and the kube-proxy to guide the client’s request to a frontend Pod:
 
-**$ kubectl exec client-app-pod-name -c client-container-name -- /bin/sh -c curl -s frontend-svc:80**
+```bash
+kubectl exec client-app-pod-name -c client-container-name -- /bin/sh -c curl -s frontend-svc:80
+```
