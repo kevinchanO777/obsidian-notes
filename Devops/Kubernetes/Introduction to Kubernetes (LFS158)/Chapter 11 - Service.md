@@ -167,6 +167,51 @@ This is the most common and highly recommended solution. For example, in the pre
 
 If we had a client application accessing the frontend application, the client would only need to “know” the frontend application’s Service name and port, which are frontend-svc and port 80 respectively. From a client application Pod we could possibly run the following command, allowing for the cluster internal name resolution and the kube-proxy to guide the client’s request to a frontend Pod:
 
+
 ```bash
 kubectl exec client-app-pod-name -c client-container-name -- /bin/sh -c curl -s frontend-svc:80
 ```
+
+## ServiceType
+
+While defining a Service, we can also choose its access scope. We can decide whether the Service:
+
+- Is only accessible within the cluster.
+- Is accessible from within the cluster and the external world.
+- Maps to an entity which resides either inside or outside the cluster.
+
+Access scope is decided by **ServiceType** property, defined when creating the Service.
+
+![[Pasted image 20250902150456.png]]
+
+
+## ServiceType - ClusterIP and NodePort
+
+### ClusterIP
+
+**ClusterIP** is the default _[ServiceType](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)_. A Service receives a Virtual IP address, known as its ClusterIP. This Virtual IP address is used for communicating with the Service and is accessible <mark style="background: #ADCCFFA6;">only</mark> from within the cluster. The **frontend-svc** Service definition manifest now includes an explicit **type** for ClusterIP. If omitted, the default ClusterIP service type is set up:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: ClusterIP
+```
+
+### NodePort
+
+With the [**NodePort**](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport) _ServiceType_, in addition to a ClusterIP, a high-port, dynamically picked from the default range **30000-32767**, is mapped to the respective Service, from all the worker nodes. For example, if the mapped NodePort is **32233** for the service **frontend-svc**, then, if we connect to any worker node on port **32233**, the node would redirect all the traffic to the assigned ClusterIP - **172.17.0.4**. If we prefer a specific high-port number instead, then we can assign that high-port number to the NodePort from the default range when creating the Service.
+
+![[Pasted image 20250902150846.png]]
+
+The **NodePort** _ServiceType_ is useful when we want to make our Services accessible from the external world.<mark style="background: #ADCCFFA6;"> The end-user connects to any worker node on the specified high-port, which proxies the request internally to the ClusterIP of the Service</mark>, then the request is forwarded to the applications running inside the cluster. Let's not forget that the Service is load balancing such requests, and only forwards the request to one of the Pods running the desired application. <mark style="background: #ADCCFFA6;">To manage access to multiple application Services from the external world, administrators can configure a reverse proxy - an ingress, and define rules that target specific Services within the cluster.</mark>
+
+The NodePort type has to be explicitly declared in the Service definition manifest or with the imperative methods explored in an earlier lesson - the **expose** and **create service** commands. Declaring the **nodePort** value **32233** is optional, ensuring there is no conflict. We are reusing the earlier definition and commands updated for the NodePort **type** and declaring the **nodePort** value where supported:
