@@ -185,9 +185,8 @@ Access scope is decided by **ServiceType** property, defined when creating the
 ![[Pasted image 20250902150456.png]]
 
 
-## ServiceType - ClusterIP and NodePort
 
-### ClusterIP
+### ServiceType - ClusterIP
 
 **ClusterIP** is the default _[ServiceType](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)_. A Service receives a Virtual IP address, known as its ClusterIP. This Virtual IP address is used for communicating with the Service and is accessible <mark style="background: #ADCCFFA6;">only</mark> from within the cluster. The **frontend-svc** Service definition manifest now includes an explicit **type** for ClusterIP. If omitted, the default ClusterIP service type is set up:
 
@@ -206,7 +205,7 @@ spec:
   type: ClusterIP
 ```
 
-### NodePort
+### ServiceType - NodePort
 
 With the [**NodePort**](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport) _ServiceType_, in addition to a ClusterIP, a high-port, dynamically picked from the default range **30000-32767**, is mapped to the respective Service, from all the worker nodes. For example, if the mapped NodePort is **32233** for the service **frontend-svc**, then, if we connect to any worker node on port **32233**, the node would redirect all the traffic to the assigned ClusterIP - **172.17.0.4**. If we prefer a specific high-port number instead, then we can assign that high-port number to the NodePort from the default range when creating the Service.
 
@@ -215,3 +214,39 @@ With the [**NodePort**](https://kubernetes.io/docs/concepts/services-networking
 The **NodePort** _ServiceType_ is useful when we want to make our Services accessible from the external world.<mark style="background: #ADCCFFA6;"> The end-user connects to any worker node on the specified high-port, which proxies the request internally to the ClusterIP of the Service</mark>, then the request is forwarded to the applications running inside the cluster. Let's not forget that the Service is load balancing such requests, and only forwards the request to one of the Pods running the desired application. <mark style="background: #ADCCFFA6;">To manage access to multiple application Services from the external world, administrators can configure a reverse proxy - an ingress, and define rules that target specific Services within the cluster.</mark>
 
 The NodePort type has to be explicitly declared in the Service definition manifest or with the imperative methods explored in an earlier lesson - the **expose** and **create service** commands. Declaring the **nodePort** value **32233** is optional, ensuring there is no conflict. We are reusing the earlier definition and commands updated for the NodePort **type** and declaring the **nodePort** value where supported:
+
+```bash
+kubectl expose deploy frontend --name=frontend-svc \
+--port=80 --target-port=5000 --type=NodePort 
+
+kubectl create service nodeport frontend-svc \
+--tcp=80:5000 --node-port=32233
+```
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+    nodePort: 32233 # Optional
+  type: NodePort
+```
+
+### ServiceType - LoadBalancer
+
+With the **[LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer)** _ServiceType_:
+
+- NodePort and ClusterIP are automatically created, and the external load balancer will route to them.
+- The Service is exposed at a static port on each worker node.
+- The Service is exposed externally using the underlying cloud provider's load balancer feature.
+
+![[Pasted image 20250902154428.png]]
+
+The **LoadBalancer** _ServiceType_ will only work if the underlying infrastructure supports the automatic creation of Load Balancers and have the respective support in Kubernetes, as is the case with the Google Cloud Platform and AWS. If no such feature is configured, the LoadBalancer IP address field is not populated, it remains in Pending state, but the Service will still work as a typical NodePort type Service.
