@@ -116,9 +116,7 @@ Once a user finishes its work, the attached PersistentVolumes can be released. T
 To learn more, you can check out the [PersistentVolumeClaims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims).
 
 
-Demo 
-
-
+Volume Demo:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -164,3 +162,5 @@ spec:
 status: {}
 
 ```
+
+PersistentVolume Demo: https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
