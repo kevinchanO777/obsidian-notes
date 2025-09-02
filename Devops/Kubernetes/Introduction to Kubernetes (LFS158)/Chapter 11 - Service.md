@@ -349,6 +349,9 @@ kubectl port-forward frontend-77cbdf6f79-qsdts 8080:5000
 kubectl port-forward svc/frontend-svc 8080:80
 ```
 
+All three commands forward port 8080 of the local workstation to the container port 5000 of the Deployment and Pod respectively, and to the Service port 80. While the Pod resource type is implicit, therefore optional and can be omitted, the Deployment and Service resource types are required to be explicitly supplied in the presented syntax.
+
+
 Or using k9s:
 ```bash
 # Open k9s
