@@ -163,4 +163,6 @@ status: {}
 
 ```
 
-PersistentVolume Demo: https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
+PersistentVolume Demo: 
+1. https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
+2. https://medium.com/@muppedaanvesh/a-hand-on-guide-to-kubernetes-volumes-%EF%B8%8F-b59d4d4e347f
