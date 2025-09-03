@@ -106,3 +106,96 @@ In the following example the **myapp-specific-container** Container's environm
           key: SPECIFIC_INFO
 ...
 ```
+
+
+### Inside Pods: As Volumes
+
+We can mount a **vol-config-map** ConfigMap as a Volume inside a Pod. The **configMap** Volume plugin converts the ConfigMap object into a mountable resource. For each key in the ConfigMap, a file gets created in the mount path (where the file is named with the key name) and the respective key's value becomes the content of the file:
+
+```yaml
+...
+  containers:
+  - name: myapp-vol-container
+    image: myapp
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: vol-config-map
+...
+```
+
+For more details, please explore the documentation on using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/).
+
+
+## Using ConfigMaps as Volumes Demo
+
+This exercise guide was prepared for the video demonstration available in this chapter. It includes an **index.html** file and a Deployment definition manifest that can be used as templates to define other similar objects as needed. The goal of the demo is to store the custom webserver **index.html** file in a ConfigMap object, which is mounted by the nginx container specified by the Pod template nested in the Deployment definition manifest.
+
+`index.html`
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to GREEN App!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+        background-color: GREEN;
+    }
+</style>
+</head>
+<body>
+<h1 style=\"text-align: center;\">Welcome to GREEN App!</h1>
+</body>
+</html>
+```
+
+`web-green-with-cm.yaml`
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: green-web
+  name: green-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: green-web
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: green-web
+    spec:
+      volumes:
+      - name: web-config
+        configMap:
+          name: green-web-cm
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web-config
+status: {}
+```
+
+1. Create configmap with `kubectl create cm green-web-cm --from-file=index.html`
+2. The deployment manifest defined the volume type configmap and mount that to the pod. We only need to run `kubectl apply -f web-green-with-cm.yaml`
+
+Forward a local port to the port 80 of the green app pod and you should see a green webpage. 
+
+Or
+
+`kubectl expose deploy green-web --name green-web-svc --type NodePort` as a service
