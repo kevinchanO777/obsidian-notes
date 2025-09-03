@@ -199,3 +199,6 @@ Forward a local port to the port 80 of the green app pod and you should see a gr
 Or
 
 `kubectl expose deploy green-web --name green-web-svc --type NodePort` as a service
+
+
+## Secret
