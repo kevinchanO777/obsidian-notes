@@ -277,15 +277,18 @@ stringData:
 
 ### Create a Secret from a File
 
-First, we encode the sensitive data and then we write the encoded data to a text file:
-```bash
-echo "mysqlpassword" | base64 > password.txt
+First, we prepare a `password.txt` file. Make sure no newline character at the end.
+```sh
+echo -n 'ohMyGod!!!!!!!' > ./password.txt
 ```
 
 Now we can create the Secret from the **password.txt** file:
 ```bash
 kubectl create secret generic my-passord2 --from-file=password.txt
 ```
+
+Default key will be the name of the file. [See](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/#use-source-files)
+
 
 ### Use Secrets Inside Pods: As Environment Variables
 
