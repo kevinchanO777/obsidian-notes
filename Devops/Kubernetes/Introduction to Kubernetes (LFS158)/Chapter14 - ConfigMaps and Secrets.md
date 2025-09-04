@@ -202,3 +202,9 @@ Or
 
 
 ## Secret
+
+Let's assume that we have a _Wordpress_ blog application, in which our **wordpress** frontend connects to the **MySQL** database backend using a password. While creating the Deployment for **wordpress**, we can include the **MySQL** password in the Deployment's YAML definition manifest, but the password would not be protected. The password would be available to anyone who has access to the definition manifest.
+
+In this scenario, the [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) object can help by allowing us to encode in base 64 the sensitive information before sharing it. We can share sensitive information like passwords, tokens, or keys in the form of key-value pairs, similar to ConfigMaps; thus, we can control how the information in a Secret is used, reducing the risk for accidental exposures. In Deployments or other resources, the Secret object is _referenced_, without exposing its content.
+
+It is important to keep in mind that by default, the Secret data is stored as plain text inside **etcd**, therefore administrators must limit access to the API server and **etcd**. <mark style="background: #FF5582A6;">However, Secret data can be encrypted at rest while it is stored in **etcd**, but this feature needs to be enabled at the API server level by the Kubernetes cluster administrator.</mark>
