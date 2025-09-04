@@ -201,7 +201,7 @@ Or
 `kubectl expose deploy green-web --name green-web-svc --type NodePort` as a service
 
 
-## Secret
+## [Secret](https://kubernetes.io/docs/concepts/configuration/secret/)
 
 Let's assume that we have a _Wordpress_ blog application, in which our **wordpress** frontend connects to the **MySQL** database backend using a password. While creating the Deployment for **wordpress**, we can include the **MySQL** password in the Deployment's YAML definition manifest, but the password would not be protected. The password would be available to anyone who has access to the definition manifest.
 
@@ -287,7 +287,7 @@ Now we can create the Secret from the **password.txt** file:
 kubectl create secret generic my-passord2 --from-file=password.txt
 ```
 
-Default key will be the name of the file. [See](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/#use-source-files)
+Default key will be the name of the file i.e. `password.txt:ohMyGod!!!!!!!`. [See](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/#use-source-files)
 
 
 ### Use Secrets Inside Pods: As Environment Variables
@@ -310,3 +310,29 @@ spec:
           key: password
 ....
 ```
+
+
+### Use Secrets Inside Pods: As Volumes
+
+We can also mount a Secret as a Volume inside a Pod. The **secret** Volume plugin converts the Secret object into a mountable resource. The following example creates a file for each **my-password** Secret key (where the files are named after the names of the keys), the files containing the values of the respective Secret keys:
+
+```yaml
+....
+spec:
+  containers:
+  - image: wordpress:4.7.3-apache
+    name: wordpress
+    volumeMounts:
+    - name: secret-volume
+      mountPath: "/etc/secret-data"
+      readOnly: true
+  volumes:
+  - name: secret-volume
+    secret:
+      secretName: my-password
+....
+```
+
+For more details, you can explore the documentation on managing [Secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
+
+
