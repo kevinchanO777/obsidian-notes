@@ -11,7 +11,10 @@ debugInConsole: false # Print debug info in Obsidian console
 ```
 ## [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 
-Make your HTTP (or HTTPS) network service available using a protocol-aware configuration mechanism, that understands web concepts like URIs, hostnames, paths, and more. The Ingress concept lets you map traffic to different backends based on rules you define via the Kubernetes API.
+>[!Warning]
+>**Kubernetes is moving away from Ingress toward Gateway API. [See](https://kubernetes.io/docs/concepts/services-networking/gateway/#migrating-from-ingress)**
+
+Make your HTTP (or HTTPS) network service available using a protocol-aware configuration mechanism, that understands web concepts like URIs, hostnames, paths, and more. The Ingress concept lets you map traffic to different backends based on rules you define via the Kubernetes API.****
 
 With Services, routing rules are associated with a given Service. They exist for as long as the Service exists, and there are many rules because there are many Services in the cluster. If we can somehow decouple the routing rules from the application and centralize the rules management, we can then update our application without worrying about its external access. This can be done using the _Ingress_ resource - a collection of rules that manage inbound connections to cluster Services.
 
@@ -112,6 +115,9 @@ spec:
 The Ingress resource does not do any request forwarding by itself, it merely accepts the definitions of traffic routing rules. The ingress is fulfilled by an Ingress Controller, which is a reverse proxy responsible for traffic routing based on rules defined in the Ingress resource.
 
 ## Ingress Controller
+
+>[!Warning]
+> `ingress-nginx` is **DIFFERENT** from `nginx-ingress`
 
 An [Ingress Controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) is an application watching the Control Plane Node's API server for changes in the Ingress resources and updates the Layer 7 Load Balancer accordingly. An Ingress Controller is also known as Controllers, Ingress Proxy, Service Proxy, Reverse Proxy, etc. Kubernetes supports an array of Ingress Controllers, and, if needed, we can also build our own. [GCE L7 Load Balancer Controller](https://github.com/kubernetes/ingress-gce/blob/master/README.md), [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller#readme), and [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx/blob/master/README.md) are commonly used Ingress Controllers. Other controllers are [Contour](https://projectcontour.io/), [HAProxy Ingress](https://haproxy-ingress.github.io/), [Istio Ingress](https://istio.io/latest/docs/tasks/traffic-management/ingress/kubernetes-ingress/), [Kong](https://konghq.com/), [Traefik](https://traefik.io/traefik/), etc. In order to ensure that the ingress controller is watching its corresponding ingress resource, the ingress resource definition manifest needs to include an ingress class name, such as **spec.ingressClassName: nginx** and optionally one or several annotations specific to the desired controller, such as **nginx.ingress.kubernetes.io/service-upstream: "true"** (for an nginx ingress controller).
 
