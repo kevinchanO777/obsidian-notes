@@ -205,6 +205,40 @@ spec:
   type: ClusterIP
 ```
 
+
+### ServiceType - [Headless Services](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
+
+For headless Services, a cluster IP is not allocated, kube-proxy does not handle these Services, and there is no load balancing or proxying done by the platform for them.
+
+A headless Service allows a client to connect to whichever Pod it prefers, directly. Services that are headless don't configure routes and packet forwarding using [virtual IP addresses and proxies](https://kubernetes.io/docs/reference/networking/virtual-ips/); instead, headless Services report the endpoint IP addresses of the individual pods via internal DNS records, served through the cluster's [DNS service](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/). To define a headless Service, you make a Service with `.spec.type` set to ClusterIP (which is also the default for `type`), and you additionally set `.spec.clusterIP` to None.
+
+The string value None is a special case and is not the same as leaving the `.spec.clusterIP` field unset.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: None
+```
+
+```bash
+# Optional
+apt install dnsutils
+
+# Inside a pod
+nslookup frontend-svc
+
+# Should return all pod IPs
+
+```
 ### ServiceType - NodePort
 
 With the [**NodePort**](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport) _ServiceType_, in addition to a ClusterIP, a high-port, dynamically picked from the default range **30000-32767**, is mapped to the respective Service, from all the worker nodes. For example, if the mapped NodePort is **32233** for the service **frontend-svc**, then, if we connect to any worker node on port **32233**, the node would redirect all the traffic to the assigned ClusterIP - **172.17.0.4**. If we prefer a specific high-port number instead, then we can assign that high-port number to the NodePort from the default range when creating the Service.
