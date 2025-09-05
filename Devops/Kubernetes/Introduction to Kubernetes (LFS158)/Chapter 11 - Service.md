@@ -206,7 +206,7 @@ spec:
 ```
 
 
-### ServiceType - [Headless Services](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
+### ServiceType - [CluterIP Headless Services](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
 
 For headless Services, a cluster IP is not allocated, kube-proxy does not handle these Services, and there is no load balancing or proxying done by the platform for them.
 
@@ -237,7 +237,17 @@ apt install dnsutils
 nslookup frontend-svc
 
 # Should return all pod IPs
+;; Got recursion not available from 10.96.0.10
+Server:         10.96.0.10
+Address:        10.96.0.10#53
 
+Name:   frontend-svc.default.svc.cluster.local
+Address: 10.244.0.49
+Name:   frontend-svc.default.svc.cluster.local
+Address: 10.244.1.54
+Name:   frontend-svc.default.svc.cluster.local
+Address: 10.244.2.63
+;; Got recursion not available from 10.96.0.10
 ```
 ### ServiceType - NodePort
 
