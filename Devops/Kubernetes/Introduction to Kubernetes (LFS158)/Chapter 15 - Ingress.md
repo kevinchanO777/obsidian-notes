@@ -126,3 +126,63 @@ Starting the Ingress Controller in Minikube is extremely simple. Minikube ships 
 ```bash
 minikube addons enable ingress
 ```
+
+
+## Ingress Demo
+
+After enabling the minikube nginx ingress controller, we can define the following ingress manifest.
+
+Assuming `green-web-svc` and `frontend-svc` uses port 80
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: default-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: green-web.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: green-web-svc
+                port:
+                  number: 80
+    - host: frontend.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-svc
+                port:
+                  number: 80
+```
+
+Apply the manifest and check the newly created ingress:
+![[Pasted image 20250906180559.png]]
+
+![[Pasted image 20250906180628.png]]
+
+
+To put it into the test:
+1. `minikube tunnel`
+2. `curl --resolve "green-web.com:80:127.0.0.1" -i http://green-web.com`
+
+![[Pasted image 20250906180822.png]]
+
+
+### Override Local DNS Resolution
+
+```bash
+sudo vi /etc/hosts
+
+# Add the following entry
+127.0.0.1   green-web.com
+127.0.0.1   frontend.com
+
+```
