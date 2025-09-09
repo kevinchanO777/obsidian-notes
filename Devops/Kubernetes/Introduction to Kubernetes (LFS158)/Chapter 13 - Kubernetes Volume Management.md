@@ -76,44 +76,8 @@ A ConfigMap allows you to decouple environment-specific configuration from your�
 You can learn more details about Volume Types from the [documentation](https://kubernetes.io/docs/concepts/storage/volumes/). However, do not be alarmed by the “deprecated” and “removed” notices. They have been added as means of tracking the original in-tree plugins which eventually migrated to the CSI driver implementation. Kubernetes native plugins do not show such a notice.
 
 
-## PersistentVolumes
+## [Secret](https://kubernetes.io/docs/concepts/configuration/secret/)
 
-In a typical IT environment, storage is managed by the storage/system administrators. The end user will just receive instructions to use the storage but is not involved with the underlying storage management.
-
-In the containerized world, we would like to follow similar rules, but it becomes challenging, given the many Volume Types we have seen earlier. Kubernetes resolves this problem with the [PersistentVolume (PV)](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) subsystem, which provides APIs for users and administrators to manage and consume persistent storage.<mark style="background: #FF5582A6;"> To manage the Volume, it uses the PersistentVolume API resource type, and to consume it, it uses the PersistentVolumeClaim API resource type.</mark>
-
-A Persistent Volume is a storage abstraction backed by several storage technologies, which could be local to the host where the Pod is deployed with its application container(s), network attached storage, cloud storage, or a distributed storage solution. A Persistent Volume is statically provisioned by the cluster administrator.
-
-
-PersistentVolumes can be [dynamically](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/) provisioned based on the StorageClass resource. A [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) contains predefined provisioners and parameters to create a PersistentVolume. Using PersistentVolumeClaims, a user sends the request for dynamic PV creation, which gets wired to the StorageClass resource.
-
-![[Pasted image 20250902205043.png]]
-
-Some of the Volume Types that support managing storage using PersistentVolumes are:
-
-- GCEPersistentDisk
-- AWSElasticBlockStore
-- AzureFile
-- AzureDisk
-- CephFS
-- NFS
-- iSCSI.
-
-For a complete list, as well as more details, you can check out the [types of Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes). The Persistent Volume types use the same CSI driver implementations as ephemeral Volumes.
-
-
-## PersistentVolumeClaims
-
-A [PersistentVolumeClaim (PVC)](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims) is a request for storage by a user. Users request for PersistentVolume resources based on storage class, [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes), size, and optionally volume mode. There are four access modes: <mark style="background: #ADCCFFA6;">ReadWriteOnce (read-write by a single node), ReadOnlyMany (read-only by many nodes), ReadWriteMany (read-write by many nodes), and ReadWriteOncePod (read-write by a single pod).</mark> The optional volume modes, filesystem or block device, allow volumes to be mounted into a pod's directory or as a raw block device respectively. By design Kubernetes does not support object storage, but it can be implemented with the help of custom resource types. Once a suitable PersistentVolume is found, it is bound to a PersistentVolumeClaim.
-
-**PersistentVolumeClaim**
-![[Pasted image 20250902205359.png]]
-
-**PersistentVolumeClaim Used In a Pod**
-![[Pasted image 20250902223134.png]]
-Once a user finishes its work, the attached PersistentVolumes can be released. The underlying PersistentVolumes can then be _reclaimed_ (for an admin to verify and/or aggregate data), _deleted_ (both data and volume are deleted), or _recycled_ for future usage (only data is deleted), based on the configured **persistentVolumeReclaimPolicy** property.
-
-To learn more, you can check out the [PersistentVolumeClaims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims).
 
 
 Volume Demo:
@@ -163,6 +127,87 @@ status: {}
 
 ```
 
+
+## PersistentVolumes
+
+> **PV is NOT namespaced**
+
+In a typical IT environment, storage is managed by the storage/system administrators. The end user will just receive instructions to use the storage but is not involved with the underlying storage management.
+
+In the containerized world, we would like to follow similar rules, but it becomes challenging, given the many Volume Types we have seen earlier. Kubernetes resolves this problem with the [PersistentVolume (PV)](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) subsystem, which provides APIs for users and administrators to manage and consume persistent storage.<mark style="background: #FF5582A6;"> To manage the Volume, it uses the PersistentVolume API resource type, and to consume it, it uses the PersistentVolumeClaim API resource type.</mark>
+
+A Persistent Volume is a storage abstraction backed by several storage technologies, which could be local to the host where the Pod is deployed with its application container(s), network attached storage, cloud storage, or a distributed storage solution. A Persistent Volume is statically provisioned by the cluster administrator.
+
+
+PersistentVolumes can be [dynamically](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/) provisioned based on the StorageClass resource. A [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) contains predefined provisioners and parameters to create a PersistentVolume. Using PersistentVolumeClaims, a user sends the request for dynamic PV creation, which gets wired to the StorageClass resource.
+
+![[Pasted image 20250902205043.png]]
+
+Some of the Volume Types that support managing storage using PersistentVolumes are:
+
+- GCEPersistentDisk
+- AWSElasticBlockStore
+- AzureFile
+- AzureDisk
+- CephFS
+- NFS
+- iSCSI.
+
+For a complete list, as well as more details, you can check out the [types of Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes). The Persistent Volume types use the same CSI driver implementations as ephemeral Volumes.
+
+
+## PersistentVolumeClaims
+
+A [PersistentVolumeClaim (PVC)](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims) is a request for storage by a user. Users request for PersistentVolume resources based on storage class, [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes), size, and optionally volume mode. There are four access modes: <mark style="background: #ADCCFFA6;">ReadWriteOnce (read-write by a single node), ReadOnlyMany (read-only by many nodes), ReadWriteMany (read-write by many nodes), and ReadWriteOncePod (read-write by a single pod).</mark> The optional volume modes, filesystem or block device, allow volumes to be mounted into a pod's directory or as a raw block device respectively. By design Kubernetes does not support object storage, but it can be implemented with the help of custom resource types. Once a suitable PersistentVolume is found, it is bound to a PersistentVolumeClaim.
+
+**PersistentVolumeClaim**
+![[Pasted image 20250902205359.png]]
+
+**PersistentVolumeClaim Used In a Pod**
+![[Pasted image 20250902223134.png]]
+Once a user finishes its work, the attached PersistentVolumes can be released. The underlying PersistentVolumes can then be _reclaimed_ (for an admin to verify and/or aggregate data), _deleted_ (both data and volume are deleted), or _recycled_ for future usage (only data is deleted), based on the configured **persistentVolumeReclaimPolicy** property.
+
+To learn more, you can check out the [PersistentVolumeClaims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims).
+
+
+### [Types of PVC](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes)
+
+PersistentVolume types are implemented as plugins. Kubernetes currently supports the following plugins:
+
+- [`csi`](https://kubernetes.io/docs/concepts/storage/volumes/#csi) - Container Storage Interface (CSI)
+- [`fc`](https://kubernetes.io/docs/concepts/storage/volumes/#fc) - Fibre Channel (FC) storage
+- [`hostPath`](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) - HostPath volume (for single node testing only; WILL NOT WORK in a multi-node cluster; consider using `local` volume instead)
+- [`iscsi`](https://kubernetes.io/docs/concepts/storage/volumes/#iscsi) - iSCSI (SCSI over IP) storage
+- [`local`](https://kubernetes.io/docs/concepts/storage/volumes/#local) - local storage devices mounted on nodes.
+- [`nfs`](https://kubernetes.io/docs/concepts/storage/volumes/#nfs) - Network File System (NFS) storage
+
+
 PersistentVolume Demo: 
 1. https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
 2. https://medium.com/@muppedaanvesh/a-hand-on-guide-to-kubernetes-volumes-%EF%B8%8F-b59d4d4e347f
+
+## [Storage Class](https://kubernetes.io/docs/concepts/storage/storage-classes/)
+
+<mark style="background: #FF5582A6;">SC</mark> provisions <mark style="background: #FF5582A6;">PV</mark> **dynamically** when <mark style="background: #FF5582A6;">PVC</mark> claims it.
+
+Example:
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: low-latency
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: kubernetes.io/aws-ebs # Example
+reclaimPolicy: Retain # default value is Delete
+allowVolumeExpansion: true
+mountOptions:
+  - discard # this might enable UNMAP / TRIM at the block storage layer
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  guaranteedReadWriteLatency: "true" # provider-specific
+  fsType: ext4
+```
+
+
+To use the above Storage Class, define the below Persistent Volume Claim:
