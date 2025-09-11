@@ -168,7 +168,7 @@ In addition, the control plane node runs: container runtime, node agent (kubele
 
 # Worker Node:
 
-A worker node has the following components: container runtime, node agent - kubelet, kubelet - CRI shims, proxy - kube-proxy, add-ons (for DNS, observability components such as dashboards, cluster-level monitoring and logging, and device plugins).
+A worker node has the following components: container runtime, node agent - kubelet, kubelet - CRI 1shims, proxy - kube-proxy, add-ons (for DNS, observability components such as dashboards, cluster-level monitoring and logging, and device plugins).
 
 <mark style="background: #ADCCFFA6;">Container Runtime</mark>
 >In order to manage a container's lifecycle, Kubernetes requires a container runtime on the node where a Pod and its containers are to be scheduled. A runtime is required on each node of a Kubernetes cluster, both control plane and worker. 
