@@ -158,13 +158,30 @@ A distributed, highly available key-value store that is used to persist a Kubern
 
 New data is written to the data store only by appending to it, data is never replaced in the data store. Obsolete data is compacted (or shredded) periodically to minimize the size of the data store.
 
-
 ```
 
 - <mark style="background: #ADCCFFA6;">cloud-controller-manager</mark> (==optional==): Manages interactions with underlying cloud providers, handling cloud-specific control loops like node and load balancer management.
 
 In addition, the control plane node runs: container runtime, node agent (kubelet), proxy (kube-proxy), optional add-ons for observability, such as dashboard, cluster-level monitoring, and logging.
 
+
+### etcd
+[Demo using Miniube](https://ashadali.medium.com/how-etcd-works-with-kubernetes-demo-using-minikube-646357a22264)
+
+To query ETCD data, use the `etcdctl` command within the pod. This command fetches key-value data stored in ETCD, which is vital for cluster state information. Here’s how to retrieve all keys in the root directory (`/`), using the specified endpoint and certificates:
+
+Replace `etcd-lfs158` with the correct etcd master node
+```sh
+kubectl exec -n kube-system po/etcd-lfs158 -- etcdctl --endpoints=https://$(minikube ip):2379 \
+  --cacert=/var/lib/minikube/certs/etcd/ca.crt \
+  --key=/var/lib/minikube/certs/etcd/server.key \
+  --cert=/var/lib/minikube/certs/etcd/server.crt \
+  get / --prefix --keys-only
+```
+- `**--endpoints**`: Specifies the ETCD API server endpoint (IP address and port).
+- `**--cacert**`: Path to the CA certificate for ETCD.
+- `**--key**`: Path to the private key used for ETCD authentication.
+- `**--cert**`: Path to the ETCD client certificate.
 
 # Worker Node:
 
