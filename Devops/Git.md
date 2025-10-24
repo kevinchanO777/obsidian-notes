@@ -33,7 +33,10 @@ git fetch --prune
 
 ```
 
-
+#### 4. Git built-in log tree
+```sh
+git log --graph --oneline --all
+```
 
 
 ## Advance topic
