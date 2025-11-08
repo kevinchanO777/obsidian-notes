@@ -33,11 +33,16 @@ git fetch --prune
 
 ```
 
-#### 4. Git built-in log tree
+#### 4.Git built-in log tree
 ```sh
 git log --graph --oneline --all
 ```
 
+#### 5. Git pickaxe
+Find commits where a specific string or regular expression was **introduced**, **removed**, or **changed**.
+```sh
+git log -p -S "<string_to_search"
+```
 
 ## Advance topic
 
