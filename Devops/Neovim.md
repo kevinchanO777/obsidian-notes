@@ -24,7 +24,6 @@ Tips and tricks with [LazyVim](https://www.lazyvim.org/)
 
 ```vim
 :let @+ = expand("%")
-
 ```
 
 #### Command History
@@ -59,13 +58,27 @@ When you have 2 files opened in the same window:
 :windo diffoff
 ```
 
-#### Show Inline Error Message (Diagnostics)
+#### Show Error Messages (Diagnostics)
 
 1. Floating Window
 
 _\<leader\>cd_
 
-Hover: The default keybinding for "Hover" is K. If you have configured your LSP settings to show diagnostics on hover, pressing K on a line with a diagnostic might display the message.
+Hover: The default keybinding for "Hover" is K. If you have configured your LSP
+settings to show diagnostics on hover, pressing K on a line with a diagnostic
+might display the message.
+
+2. Diagnostics List
+
+Opened buffer: _\<leader\>xx_
+
+Current buffer: _\<leader\>x**X**_
+
+#### Wrapping Texts (Format)
+
+_gww_
+
+goto -> Format -> Next word
 
 ## Markdown
 
